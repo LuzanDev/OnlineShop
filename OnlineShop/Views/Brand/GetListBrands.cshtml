@@ -1,0 +1,92 @@
+﻿<div class="container">
+    <div class="row mb-3">
+        <div class="col">
+            <h3>Бренды</h3>
+        </div>
+        <div class="col d-flex justify-content-end">
+            <button type="button" class="btn btn-outline-success btn-sm">+ Добавить</button>
+        </div>
+    </div>
+    <table id="brandsTable" class="table">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">№</th>
+                <th scope="col">Название</th>
+                <th scope="col" class="text-right" style="width: 50px;"></th>
+                <th scope="col" class="text-right" style="width: 50px;"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data rows will be dynamically inserted here -->
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <ul id="pagination" class="pagination justify-content-center">
+        <!-- Pagination buttons will be dynamically inserted here -->
+    </ul>
+</div>
+
+
+<script>
+    // Function to fill table with data
+    // Function to fill table with data
+    function fillTable(data, startIndex) {
+        // Clear table before populating with new data
+        $('#brandsTable tbody').empty();
+        // Fill table with data
+        $.each(data, function (index, brand) {
+            var row = '<tr><td>' + (startIndex + index) + '</td><td>' + brand.text + '</td>' +
+                '<td><img src="img\\edit_24dp.svg" alt="Edit" onclick="editBrand(' + brand.id + ')"></td>' +
+                '<td><img src="img\\delete_24dp.svg" alt="Delete" onclick="deleteBrand(' + brand.id + ')"></td></tr>';
+            $('#brandsTable tbody').append(row);
+        });
+    }
+
+
+    // Function to populate table rows
+    function populateTable(pageNumber) {
+        $.ajax({
+            url: "/Brand/GetAllBrands", // Change "Controller" to your controller's name
+            type: "GET",
+            success: function (data) {
+                var startIndex = (pageNumber - 1) * 15 + 1;
+                var endIndex = pageNumber * 15;
+                var paginatedData = data.slice(startIndex - 1, endIndex);
+                fillTable(paginatedData, startIndex);
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+
+    // Function to populate pagination buttons
+    function populatePagination() {
+        $.ajax({
+            url: "/Brand/GetAllBrands",
+            type: "GET",
+            success: function (data) {
+                var pagination = $('#pagination');
+                pagination.empty();
+                var pageCount = Math.ceil(data.length / 15);
+                for (var i = 1; i <= pageCount; i++) {
+                    pagination.append(`<li class="page-item"><a class="page-link" href="#" onclick="changePage(${i})">${i}</a></li>`);
+                }
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+
+    // Function to change page
+    function changePage(pageNumber) {
+        populateTable(pageNumber);
+    }
+
+    // Initial population
+    populateTable(1);
+    populatePagination();
+</script>
+

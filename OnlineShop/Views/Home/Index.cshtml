@@ -1,8 +1,32 @@
-﻿@{
+﻿@using OnlineShop.Models.Entity
+@model IEnumerable<Product>
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+
+<!-- Цикл для отображения каждого товара -->
+@foreach (var product in Model)
+{
+    <div class="col-md-6">
+        <div class="card">
+            <!-- Изображение товара -->
+            @if (product.Images.Any())
+            {
+                <img src="data:image/jpeg;base64,@Convert.ToBase64String(product.Images.First().Data)" class="card-img-top" alt="Product Image">
+            }
+            <div class="card-body">
+                <!-- Название товара -->
+                <h5 class="card-title">@product.Name</h5>
+                <!-- Описание товара -->
+                <p class="card-text">@product.Description</p>
+                <!-- Цена товара -->
+                <p class="card-text">@product.Price</p>
+                <!-- Кнопка для дополнительных действий -->
+                <a href="#" class="btn btn-primary">Buy Now</a>
+            </div>
+        </div>
+    </div>
+}
+
+

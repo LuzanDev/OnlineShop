@@ -1,21 +1,32 @@
 using Microsoft.AspNetCore.Mvc;
 using OnlineShop.Models;
+using OnlineShop.Models.Interfaces.Services;
 using System.Diagnostics;
 
 namespace OnlineShop.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly IProductService _productService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(IProductService productService)
         {
-            _logger = logger;
+            _productService = productService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var response = await _productService.GetAllProducts();
+            if (response.IsSuccess) 
+            {
+                return View(response.Data);
+            }
+            else
+            {
+
+            }
+            ///Обработать
+            throw new NotImplementedException();
         }
 
         public IActionResult Privacy()

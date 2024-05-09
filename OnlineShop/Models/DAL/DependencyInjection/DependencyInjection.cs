@@ -1,4 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using OnlineShop.Models.DAL.Repositories;
+using OnlineShop.Models.Entity;
+using OnlineShop.Models.Interfaces.Repository;
+using OnlineShop.Models.Interfaces.Services;
+using OnlineShop.Models.Services;
 
 namespace OnlineShop.Models.DAL.DependencyInjection
 {
@@ -6,11 +11,28 @@ namespace OnlineShop.Models.DAL.DependencyInjection
     {
         public static void AddDataAccessLayer(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<ApplicationDbContext>(options => 
+            services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseNpgsql(configuration.GetConnectionString("PostgresSQL"));
             });
 
+            services.InitRepositories();
+        }
+
+        private static void InitRepositories(this IServiceCollection services)
+        {
+            //repositories
+            services.AddScoped<IBaseRepository<Product>, BaseRepository<Product>>();
+            services.AddScoped<IBaseRepository<Brand>, BaseRepository<Brand>>();
+            services.AddScoped<IBaseRepository<Category>, BaseRepository<Category>>();
+            
+            
+            
+            
+            //services
+            services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IBrandService, BrandService>();
+            services.AddScoped<ICategoryService, CategoryService>();
         }
     }
 }
