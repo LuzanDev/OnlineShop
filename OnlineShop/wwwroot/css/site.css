@@ -24,3 +24,17 @@ body {
 #brandsTable img {
     cursor: pointer;
 }
+
+#notification-container {
+    display: none;
+    position: fixed;
+    top: 12%; /* Отступ от верхней границы экрана */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: auto; /* Автоматическая ширина */
+    max-width: 90%; /* Максимальная ширина уведомления */
+}
+
+
+

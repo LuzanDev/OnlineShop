@@ -17,76 +17,138 @@
             </tr>
         </thead>
         <tbody>
-            <!-- Data rows will be dynamically inserted here -->
+            
         </tbody>
     </table>
+    <div id="notification-container"></div>
 
-    <!-- Pagination -->
-    <ul id="pagination" class="pagination justify-content-center">
-        <!-- Pagination buttons will be dynamically inserted here -->
-    </ul>
 </div>
 
 
 <script>
-    // Function to fill table with data
-    // Function to fill table with data
+   
+    $(document).ready(function () {
+        loadTableData();
+
+        
+    });
+    
+    // Функция для загрузки данных для таблицы
+    function loadTableData() {
+        $.ajax({
+            url: '/Brand/GetAllBrands',
+            type: 'GET',
+            success: function (data) {
+                fillTable(data, 1);
+            },
+            error: function (xhr, status, error) {
+                console.error('Ошибка при получении данных:', error);
+                alert('Произошла ошибка при загрузке данных. Пожалуйста, обновите страницу или попробуйте позже.');
+            }
+        });
+    }
+
+    // Функция для заполнения таблицы
     function fillTable(data, startIndex) {
-        // Clear table before populating with new data
+        // Очищаем таблицу перед заполнением новыми данными
         $('#brandsTable tbody').empty();
-        // Fill table with data
+        // Заполняем таблицу данными
         $.each(data, function (index, brand) {
             var row = '<tr><td>' + (startIndex + index) + '</td><td>' + brand.text + '</td>' +
-                '<td><img src="img\\edit_24dp.svg" alt="Edit" onclick="editBrand(' + brand.id + ')"></td>' +
-                '<td><img src="img\\delete_24dp.svg" alt="Delete" onclick="deleteBrand(' + brand.id + ')"></td></tr>';
+                '<td><img src="img\\edit_24dp.svg" alt="Edit" onclick="editBrand(' + brand.value + ')"></td>' +
+                '<td><img src="img\\delete_24dp.svg" alt="Delete" onclick="showDeleteConfirmationModal(' + brand.value + ', \'' + brand.text + '\')"></td></tr>';
             $('#brandsTable tbody').append(row);
         });
     }
 
-
-    // Function to populate table rows
-    function populateTable(pageNumber) {
+    //Функция удаление элемента с таблицы
+    function deleteBrand(id) {
         $.ajax({
-            url: "/Brand/GetAllBrands", // Change "Controller" to your controller's name
-            type: "GET",
+            url: "/Brand/Delete",
+            type: "DELETE",
+            data: { id: id },
             success: function (data) {
-                var startIndex = (pageNumber - 1) * 15 + 1;
-                var endIndex = pageNumber * 15;
-                var paginatedData = data.slice(startIndex - 1, endIndex);
-                fillTable(paginatedData, startIndex);
+                console.log("Бренд успешно удален:", data);
+                loadTableData();
+                showSuccessNotification("Бренд '" + data + "' успешно удален");
             },
-            error: function (error) {
-                console.log(error);
+            error: function (xhr) {
+                // Произошла ошибка удаления
+                console.error("Ошибка при удалении бренда:", xhr.responseJSON.errorMessage);
+                // Ваша логика обработки ошибки, например, вывод сообщения об ошибке пользователю
+                alert("Ошибка при удалении бренда: " + xhr.responseJSON.errorMessage);
             }
         });
     }
 
-    // Function to populate pagination buttons
-    function populatePagination() {
-        $.ajax({
-            url: "/Brand/GetAllBrands",
-            type: "GET",
-            success: function (data) {
-                var pagination = $('#pagination');
-                pagination.empty();
-                var pageCount = Math.ceil(data.length / 15);
-                for (var i = 1; i <= pageCount; i++) {
-                    pagination.append(`<li class="page-item"><a class="page-link" href="#" onclick="changePage(${i})">${i}</a></li>`);
-                }
-            },
-            error: function (error) {
-                console.log(error);
-            }
-        });
+    // Функция для отображения уведомления успешного действия
+    function showSuccessNotification(message) {
+        var notification = `
+            <div class="alert alert-success d-flex align-items-center" role="alert">
+                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Success:"><use xlink:href="#check-circle-fill" /></svg>
+                <div>${message}</div>
+            </div>
+        `;
+
+        // Удаляем все существующие уведомления перед добавлением нового
+        $('#notification-container').empty();
+        // Добавляем уведомление в контейнер
+        $('#notification-container').append(notification);
+        // Анимация появления
+        $('#notification-container').fadeIn();
+        // Закрываем уведомление через 3 секунды
+        setTimeout(function () {
+            $('#notification-container').fadeOut();
+        }, 3000);
     }
 
-    // Function to change page
-    function changePage(pageNumber) {
-        populateTable(pageNumber);
+    // Функция для отображения модального окна перед удалением элемента
+    function showDeleteConfirmationModal(id, brandName) {
+        
+        var modalTitle = document.querySelector('#exampleModal .modal-title');
+        var modalBody = document.querySelector('#exampleModal .modal-body');
+        
+        modalTitle.textContent = 'Подтверждение удаления';
+        modalBody.innerHTML = "Вы действительно хотите удалить <strong>" + brandName + "</strong>?";
+
+        // Создаем кнопки "Отмена" и "Да"
+        var cancelButton = document.createElement('button');
+        cancelButton.setAttribute('type', 'button');
+        cancelButton.setAttribute('class', 'btn btn-secondary');
+        cancelButton.setAttribute('data-bs-dismiss', 'modal');
+        cancelButton.textContent = 'Отмена';
+
+        var confirmButton = document.createElement('button');
+        confirmButton.setAttribute('type', 'button');
+        confirmButton.setAttribute('class', 'btn btn-danger');
+        confirmButton.textContent = 'Да';
+
+        // Очищаем футер модального окна перед добавлением новых кнопок
+        var modalFooter = document.querySelector('#exampleModal .modal-footer');
+        modalFooter.innerHTML = '';
+
+        // Добавляем кнопки в футер модального окна
+        modalFooter.appendChild(cancelButton);
+        modalFooter.appendChild(confirmButton);
+
+        // Отображаем модальное окно
+        var modal = new bootstrap.Modal(document.getElementById('exampleModal'));
+        modal.show();
+
+        
+
+        // Назначаем обработчик события для кнопки "Да"
+        confirmButton.onclick = function () {
+            deleteBrand(id);
+            modal.hide();
+        };
     }
 
-    // Initial population
-    populateTable(1);
-    populatePagination();
+
+    
+
+    
+
+    
 </script>
 

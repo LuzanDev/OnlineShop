@@ -19,7 +19,7 @@ namespace OnlineShop.Models.DAL.Repositories
             return entity;
         }
 
-        public async void Delete(T entity)
+        public async Task Delete(T entity)
         {
             if (entity == null) throw new ArgumentNullException("Entity is null");
             _context.Remove(entity);

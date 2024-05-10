@@ -28,9 +28,23 @@ namespace OnlineShop.Controllers
             }
             else
             {
-                return Json(new { errorCode = response.ErrorCode, errorMessage = response.ErrorMessage });
+                return StatusCode(500, new { errorCode = response.ErrorCode, errorMessage = response.ErrorMessage });
             }
-            //return Json(new { errorCode = 2, errorMessage = "Error from Brand" });
+            //return StatusCode(500, new { errorCode = response.ErrorCode, errorMessage = response.ErrorMessage });
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var response = await _brandService.DeleteBrand(id);
+            if (response.IsSuccess)
+            {
+                return Ok(response.Data.Name); 
+            }
+            else
+            {
+                return StatusCode(500, new { errorCode = response.ErrorCode, errorMessage = response.ErrorMessage });
+            }
         }
 
         public IActionResult GetListBrands()

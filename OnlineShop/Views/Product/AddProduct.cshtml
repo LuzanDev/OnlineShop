@@ -23,7 +23,7 @@
             <span asp-validation-for="Price" class="text-danger"></span>
         </div>
         <!-- Бренд -->
-        <div class="mb-3"
+        <div class="mb-3">
         <label class="form-label">Бренд</label>
         <select id="selectMenuBrand" class="form-select" aria-label="Default select example" asp-for="BrandId" required>
             <option selected>Loading...</option>
@@ -31,7 +31,7 @@
         <span asp-validation-for="BrandId" class="text-danger"></span>
         </div>
         <!-- Категория -->
-        <div class="mb-3"
+        <div class="mb-3">
         <label class="form-label">Категория</label>
         <select id="selectMenuCategory" class="form-select" aria-label="Default select example" asp-for="CategoryId" required>
             <option selected>Loading...</option>
@@ -43,7 +43,7 @@
             <label class="form-label">Изображения</label>
             <input id="Images" type="file" name="Images" class="form-control" multiple required />
             <span class="text-muted">Можно выбрать несколько изображений</span>
-            <span asp-validation-for="Images" class="text-danger"></span> <!-- Добавлено для вывода ошибок -->
+            <span asp-validation-for="Images" class="text-danger"></span> 
         </div>
         <!-- Кнопка для отправки формы -->
         <button type="submit" class="btn btn-primary">Добавить товар</button>

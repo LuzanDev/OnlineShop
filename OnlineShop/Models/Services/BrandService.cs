@@ -43,7 +43,7 @@ namespace OnlineShop.Models.Services
             }
             else
             {
-                _brandRepository.Delete(brand);
+               await _brandRepository.Delete(brand);
                 return new BaseResult<Brand>()
                 {
                     Data = brand

@@ -26,23 +26,7 @@ function loadTableBrands() {
             console.log(error);
         }
     });
-
-    //$.ajax({
-    //    url: "/Brand/GetAllBrands", // Замените "Controller" на имя вашего контроллера
-    //    type: "GET",
-    //    success: function (data) {
-    //        // Очищаем таблицу перед заполнением новыми данными
-    //        $('#brandsTable').empty();
-    //        // Заполняем таблицу данными
-    //        $.each(data, function (index, brand) {
-    //            var row = '<tr><td>' + (index + 1) + '</td><td>' + brand.text + '</td></tr>';
-    //            $('#brandsTable').append(row);
-    //        });
-    //    },
-    //    error: function (error) {
-    //        console.log(error);
-    //    }
-    //});
+    
 }
 
 // Обработчик клика на элементе "Добавить продукт" 
@@ -71,6 +55,10 @@ $(document).on("click", "#loadBrandsTable", function (e) {
 //Общие
 // Функция для отображения модального окна с заданным заголовком и содержимым
 function showModal(title, content) {
+    // Очищаем футер модального окна перед добавлением новых кнопок
+    var modalFooter = document.querySelector('#exampleModal .modal-footer');
+    modalFooter.innerHTML = '';
+
     $('#exampleModal .modal-title').text(title); 
     $('#exampleModal .modal-body').html(content);
     $('#exampleModal').modal('show'); 
