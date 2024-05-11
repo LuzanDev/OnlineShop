@@ -1,0 +1,9 @@
+﻿@model OnlineShop.Views.ViewModel.BrandViewModel
+    
+    <form id="createBrandForm">
+        <div class="mb-4">
+            <label asp-for="Name" class="form-label">Название бренда:</label>
+        <input asp-for="Name" class="form-control" required />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+    </form>

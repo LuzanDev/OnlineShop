@@ -29,9 +29,14 @@ namespace OnlineShop.Controllers
             }
             else
             {
-                return Json(new { errorCode = response.ErrorCode, errorMessage = response.ErrorMessage });
+                return StatusCode(500, new { errorCode = response.ErrorCode, errorMessage = response.ErrorMessage });
             }
-            //return Json(new { errorCode = 1, errorMessage = "Error from Category" });
+        }
+
+
+        public IActionResult Categories()
+        {
+            return PartialView();
         }
     }
 }

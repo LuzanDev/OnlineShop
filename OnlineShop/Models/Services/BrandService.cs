@@ -17,11 +17,17 @@ namespace OnlineShop.Models.Services
             _brandRepository = brandRepository;
         }
 
-        public async Task<BaseResult<Brand>> CreateBrandAsync(BrandViewModel model)
+        public async Task<bool> BrandAlreadExists(string nameBrand)
+        {
+            var brands = await _brandRepository.GetAll().Select(x => x.Name).ToListAsync();
+            return brands.Contains(nameBrand);
+        }
+
+        public async Task<BaseResult<Brand>> CreateBrandAsync(string nameBrand)
         {
             Brand brand = new Brand()
             {
-                Name = model.Name,
+                Name = nameBrand
             };
            brand =  await _brandRepository.AddAsync(brand);
             return new BaseResult<Brand>()
@@ -72,25 +78,19 @@ namespace OnlineShop.Models.Services
             }
         }
 
-        public async Task<BaseResult<Brand>> UpdateBrand(Brand brand)
+        public async Task<BaseResult<Brand>> UpdateBrand(int brandId, string newBrandName)
         {
-            var brands = await _brandRepository.GetAll().Select(x => x.Name).ToListAsync();
-            if (brands.Contains(brand.Name))
-            {
-               return new BaseResult<Brand>()
-               {
-                   ErrorMessage = "BrandAlreadyExists",
-                   ErrorCode = (int)ErrorCodes.BrandAlreadyExists
-               };
-            }
-            else
-            {
-               await _brandRepository.Update(brand);
+                Brand brand = new Brand()
+                {
+                    Id  = brandId,
+                    Name = newBrandName
+                };
+                await _brandRepository.Update(brand);
                 return new BaseResult<Brand>()
                 {
                     Data = brand
                 };
-            }
+            
         }
     }
 }

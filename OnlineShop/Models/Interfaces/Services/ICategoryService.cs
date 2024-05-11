@@ -7,8 +7,9 @@ namespace OnlineShop.Models.Interfaces.Services
     public interface ICategoryService
     {
         Task<CollectionResult<Category>> GetAllCategory();
-        Task<BaseResult<Category>> CreateCategoryAsync(CategoryViewModel model);
-        Task<BaseResult<Category>> UpdateCategory(Category brand);
+        Task<BaseResult<Category>> CreateCategoryAsync(string nameCategory);
+        Task<BaseResult<Category>> UpdateCategory(int categoryId, string newNameCategory);
         Task<BaseResult<Category>> DeleteCategory(int id);
+        Task<bool> CategoryAlreadExists(string categoryName);
     }
 }

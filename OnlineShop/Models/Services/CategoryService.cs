@@ -17,11 +17,17 @@ namespace OnlineShop.Models.Services
             _categoryRepository = categoryRepository;
         }
 
-        public async Task<BaseResult<Category>> CreateCategoryAsync(CategoryViewModel model)
+        public async Task<bool> CategoryAlreadExists(string categoryName)
+        {
+            var categories = await _categoryRepository.GetAll().Select(x => x.Name).ToListAsync();
+            return categories.Contains(categoryName);
+        }
+
+        public async Task<BaseResult<Category>> CreateCategoryAsync(string nameCategory)
         {
             Category category = new Category()
             {
-                Name = model.Name,
+                Name = nameCategory
             };
             category = await _categoryRepository.AddAsync(category);
             return new BaseResult<Category>()
@@ -43,7 +49,7 @@ namespace OnlineShop.Models.Services
             }
             else
             {
-                _categoryRepository.Delete(category);
+              await  _categoryRepository.Delete(category);
                 return new BaseResult<Category>()
                 {
                     Data = category
@@ -72,25 +78,20 @@ namespace OnlineShop.Models.Services
             }
         }
 
-        public async Task<BaseResult<Category>> UpdateCategory(Category brand)
+        public async Task<BaseResult<Category>> UpdateCategory(int categoryId, string newNameCategory)
         {
-            var category = await _categoryRepository.GetAll().Select(x => x.Name).ToListAsync();
-            if (category.Contains(brand.Name))
+            Category category = new Category()
             {
-                return new BaseResult<Category>()
-                {
-                    ErrorMessage = "CategoryAlreadyExists",
-                    ErrorCode = (int)ErrorCodes.CategoryAlreadyExists
-                };
-            }
-            else
+                Id = categoryId,
+                Name = newNameCategory
+            };
+            await _categoryRepository.Update(category);
+
+            return new BaseResult<Category>()
             {
-                await _categoryRepository.Update(brand);
-                return new BaseResult<Category>()
-                {
-                    Data = brand
-                };
-            }
+                Data = category
+            };
+
         }
     }
 }

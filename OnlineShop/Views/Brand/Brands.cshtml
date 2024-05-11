@@ -1,0 +1,375 @@
+﻿
+<div class="container">
+    <div class="row mb-3">
+        <div class="col">
+            <h3>Бренды</h3>
+        </div>
+        <div class="col d-flex justify-content-end">
+            <button type="button" class="btn btn-outline-success btn-sm" onclick="createBrand()">+ Добавить</button>
+        </div>
+    </div>
+    <table id="brandsTable" class="table">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">№</th>
+                <th scope="col">Название</th>
+                <th scope="col" class="text-right" style="width: 50px;"></th>
+                <th scope="col" class="text-right" style="width: 50px;"></th>
+            </tr>
+        </thead>
+        <tbody>
+            
+        </tbody>
+    </table>
+</div>
+
+
+<script>
+   
+    $(document).ready(function () {
+        loadTableData();
+
+        
+    });
+    
+    // Функция для загрузки данных для таблицы
+    function loadTableData() {
+        $.ajax({
+            url: '/Brand/GetAllBrands',
+            type: 'GET',
+            success: function (data) {
+                fillTable(data, 1);
+            },
+            error: function (xhr, status, error) {
+                console.error('Ошибка при получении данных:', error);
+                alert('Произошла ошибка при загрузке данных. Пожалуйста, обновите страницу или попробуйте позже.');
+            }
+        });
+    }
+
+    // Функция для заполнения таблицы
+    function fillTable(data, startIndex) {
+        // Очищаем таблицу перед заполнением новыми данными
+        $('#brandsTable tbody').empty();
+        // Заполняем таблицу данными
+        $.each(data, function (index, brand) {
+            var row = '<tr><td>' + (startIndex + index) + '</td><td>' + brand.text + '</td>' +
+                '<td><img src="img\\edit_24dp.svg" alt="Edit" onclick="editBrand(' + brand.value + ', \'' + brand.text + '\')"></td>' +
+                '<td><img src="img\\delete_24dp.svg" alt="Delete" onclick="showDeleteConfirmationModal(' + brand.value + ', \'' + brand.text + '\')"></td></tr>';
+            $('#brandsTable tbody').append(row);
+        });
+    }
+
+    //Функция удаление элемента с таблицы
+    function deleteBrand(id) {
+        $.ajax({
+            url: "/Brand/Delete",
+            type: "DELETE",
+            data: { id: id },
+            success: function (data) {
+                console.log("Бренд успешно удален:", data);
+                loadTableData();
+                showSuccessNotification("Бренд '" + data + "' успешно удален");
+            },
+            error: function (xhr) {
+                // Произошла ошибка удаления
+                console.error("Ошибка при удалении бренда:", xhr.responseJSON.errorMessage);
+                // Ваша логика обработки ошибки, например, вывод сообщения об ошибке пользователю
+                alert("Ошибка при удалении бренда: " + xhr.responseJSON.errorMessage);
+            }
+        });
+    }
+
+    
+
+    // Функция для отображения модального окна перед удалением элемента
+    function showDeleteConfirmationModal(id, brandName) {
+        resetModal();
+        var modalTitle = document.querySelector('#exampleModal .modal-title');
+        var modalBody = document.querySelector('#exampleModal .modal-body');
+        
+        modalTitle.textContent = 'Подтверждение удаления';
+        modalBody.innerHTML = "Вы действительно хотите удалить <strong>" + brandName + "</strong>?";
+
+        // Создаем кнопки "Отмена" и "Да"
+        var cancelButton = document.createElement('button');
+        cancelButton.setAttribute('type', 'button');
+        cancelButton.setAttribute('class', 'btn btn-secondary');
+        cancelButton.setAttribute('data-bs-dismiss', 'modal');
+        cancelButton.textContent = 'Отмена';
+
+        var confirmButton = document.createElement('button');
+        confirmButton.setAttribute('type', 'button');
+        confirmButton.setAttribute('class', 'btn btn-danger');
+        confirmButton.textContent = 'Да';
+
+        // Очищаем футер модального окна перед добавлением новых кнопок
+        var modalFooter = document.querySelector('#exampleModal .modal-footer');
+        modalFooter.innerHTML = '';
+
+        // Добавляем кнопки в футер модального окна
+        modalFooter.appendChild(cancelButton);
+        modalFooter.appendChild(confirmButton);
+
+        // Отображаем модальное окно
+        var modal = new bootstrap.Modal(document.getElementById('exampleModal'));
+        modal.show();
+
+        
+
+        // Назначаем обработчик события для кнопки "Да"
+        confirmButton.onclick = function () {
+            deleteBrand(id);
+            modal.hide();
+        };
+    }
+    
+    
+    // Функция для отображения модального окна редактирования бренда
+    function editBrand(brandValue, brandText) {
+        
+        resetModal();
+        var modal = document.getElementById('exampleModal');
+        var modalTitle = document.querySelector('#exampleModal .modal-title');
+        var modalBody = document.querySelector('#exampleModal .modal-body');
+
+        modalTitle.textContent = 'Изменить название бренда';
+
+        $.get('/Brand/CreateBrandForm', function (template) {
+            modalBody.innerHTML = template;
+
+            var nameInput = document.getElementById('Name');
+            nameInput.value = brandText;
+
+            var cancelButton = document.createElement('button');
+            cancelButton.setAttribute('type', 'button');
+            cancelButton.setAttribute('class', 'btn btn-secondary');
+            cancelButton.setAttribute('data-bs-dismiss', 'modal');
+            cancelButton.textContent = 'Отмена';
+
+            var saveButton = document.createElement('button');
+            saveButton.setAttribute('type', 'button');
+            saveButton.setAttribute('class', 'btn btn-success');
+            saveButton.setAttribute('id', 'createBrandFormButton');
+            saveButton.textContent = 'Сохранить';
+
+            var modalFooter = document.querySelector('#exampleModal .modal-footer');
+            modalFooter.appendChild(cancelButton);
+            modalFooter.appendChild(saveButton);
+
+            
+
+
+
+            var modalDialog = modal.querySelector('.modal-dialog');
+            modalDialog.classList.add('modal-dialog-centered');
+
+            var modalInstance = new bootstrap.Modal(modal, { backdrop: 'static' });
+            modalInstance.show();
+            // Устанавливаем фокус на поле ввода с небольшой задержкой после открытия модального окна
+            setTimeout(function () {
+                nameInput.focus();
+            }, 100);
+            
+            nameInput.addEventListener('input', function () {
+                nameInput.setCustomValidity('');
+            });
+
+            // Обработчик события click для кнопки создания бренда
+            saveButton.addEventListener('click', async function () {
+                var form = document.getElementById('createBrandForm');
+                var nameValue = nameInput.value.trim();
+                nameInput.setCustomValidity('');
+
+                if (nameValue.length < 2) {
+                    nameInput.setCustomValidity('Название бренда должно содержать как минимум 2 символа.');
+                }
+                else {
+                    var alreadyExists = await checkBrandUniqueness(nameValue);
+                    if (alreadyExists) {
+                        nameInput.setCustomValidity('Бренд с таким именем уже существует. ' + nameInput.validationMessage);
+                    }
+                }
+
+                if (form.reportValidity()) {
+                    // Если форма проходит валидацию, можно выполнять вашу логику создания бренда
+                    console.log('Форма прошла валидацию. Можно отправлять данные.');
+
+                    $.ajax({
+                        url: "/Brand/Update",
+                        type: "PUT",
+                        data: { id: brandValue, newNameBrand: nameValue },
+                        success: function (data) {
+                            console.log("Бренд успешно изменен:", data);
+                            loadTableData();
+                            modalInstance.hide(); // Скрываем модальное окно
+                            showSuccessNotification("Бренд '" + data + "' успешно изменен");
+
+                        },
+                        error: function (xhr) {
+                            // Произошла ошибка изменения
+                            console.error("Ошибка при изменении бренда:", xhr.responseJSON.errorMessage);
+                            // Ваша логика обработки ошибки, например, вывод сообщения об ошибке пользователю
+                            alert("Ошибка при изменении бренда: " + xhr.responseJSON.errorMessage);
+                        }
+                    });
+
+                } else {
+                    console.log('Форма не прошла валидацию. Проверьте введённые данные.');
+                }
+            });
+        });
+    }
+
+    function createBrand() {
+        resetModal();
+        var modal = document.getElementById('exampleModal');
+        var modalTitle = document.querySelector('#exampleModal .modal-title');
+        var modalBody = document.querySelector('#exampleModal .modal-body');
+
+        modalTitle.textContent = 'Добавить новый бренд';
+
+
+        $.get('/Brand/CreateBrandForm', function (template) {
+            modalBody.innerHTML = template;
+
+            var cancelButton = document.createElement('button');
+            cancelButton.setAttribute('type', 'button');
+            cancelButton.setAttribute('class', 'btn btn-secondary');
+            cancelButton.setAttribute('data-bs-dismiss', 'modal');
+            cancelButton.textContent = 'Отмена';
+
+            var createButton = document.createElement('button');
+            createButton.setAttribute('type', 'button');
+            createButton.setAttribute('class', 'btn btn-success');
+            createButton.setAttribute('id', 'createBrandFormButton');
+            createButton.textContent = 'Добавить';
+
+            var modalFooter = document.querySelector('#exampleModal .modal-footer');
+            modalFooter.appendChild(cancelButton);
+            modalFooter.appendChild(createButton);
+
+
+            var modalDialog = modal.querySelector('.modal-dialog');
+            modalDialog.classList.add('modal-dialog-centered');
+
+            var modalInstance = new bootstrap.Modal(modal, { backdrop: 'static' });
+            modalInstance.show();
+            // Устанавливаем фокус на поле ввода с небольшой задержкой после открытия модального окна
+            setTimeout(function () {
+                nameInput.focus();
+            }, 100);
+
+            var nameInput = document.getElementById('Name');
+            nameInput.addEventListener('input', function () {
+                nameInput.setCustomValidity('');
+            });
+
+            // Обработчик события click для кнопки создания бренда
+            createButton.addEventListener('click', async function () {
+                var form = document.getElementById('createBrandForm');
+                var nameValue = nameInput.value.trim();
+                nameInput.setCustomValidity('');
+
+                if (nameValue.length < 2) {
+                    nameInput.setCustomValidity('Название бренда должно содержать как минимум 2 символа.');
+                }
+                else {
+                    var alreadyExists = await checkBrandUniqueness(nameValue);
+                    if (alreadyExists) {
+                        nameInput.setCustomValidity('Бренд с таким именем уже существует. ' + nameInput.validationMessage);
+                    }
+                }
+
+                if (form.reportValidity()) {
+                    // Если форма проходит валидацию, можно выполнять вашу логику создания бренда
+                    console.log('Форма прошла валидацию. Можно отправлять данные.');
+
+                    $.ajax({
+                        url: "/Brand/Create",
+                        type: "POST",
+                        data: { nameBrand: nameValue },
+                        success: function (data) {
+                            console.log("Бренд успешно добавлен:", data);
+                            loadTableData();
+                            modalInstance.hide(); // Скрываем модальное окно
+                            showSuccessNotification("Бренд '" + data + "' успешно добавлен");
+
+                        },
+                        error: function (xhr) {
+                            // Произошла ошибка изменения
+                            console.error("Ошибка при изменении бренда:", xhr.responseJSON.errorMessage);
+                            // Ваша логика обработки ошибки, например, вывод сообщения об ошибке пользователю
+                            alert("Ошибка при добавлении бренда: " + xhr.responseJSON.errorMessage);
+                        }
+                    });
+
+                } else {
+                    console.log('Форма не прошла валидацию. Проверьте введённые данные.');
+                }
+            });
+
+
+
+        });
+
+        
+    }
+    
+
+
+    
+
+    async function checkBrandUniqueness(brandName) {
+        try 
+        {
+            var response = await fetch('/Brand/BrandAlreadyExists?brandName=' + encodeURIComponent(brandName));
+            if (response.ok) {
+                return await response.text() === 'true'; // Возвращаем результат проверки оригинальности имени бренда (true/false)
+            }
+            throw new Error('Network response was not ok.');
+        } 
+        catch (error) 
+        {
+            console.error('There was a problem with the fetch operation:', error);
+            return false; // В случае ошибки возвращаем false
+        }
+    }
+
+
+    function resetModal() {
+        // Находим модальное окно
+        var modal = document.getElementById('exampleModal');
+
+        // Находим диалоговое окно модального окна и удаляем класс для центрирования
+        var modalDialog = modal.querySelector('.modal-dialog');
+        modalDialog.classList.remove('modal-dialog-centered');
+
+        // Находим заголовок модального окна
+        var modalTitle = modal.querySelector('.modal-title');
+
+        // Находим тело модального окна
+        var modalBody = modal.querySelector('.modal-body');
+
+        // Находим футер модального окна
+        var modalFooter = modal.querySelector('.modal-footer');
+
+        // Устанавливаем пустой заголовок
+        modalTitle.textContent = '';
+
+        // Очищаем тело модального окна
+        modalBody.innerHTML = '';
+
+        // Очищаем футер модального окна
+        modalFooter.innerHTML = '';
+    }
+
+
+
+    
+
+    
+
+    
+</script>
+

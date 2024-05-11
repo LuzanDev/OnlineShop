@@ -1,0 +1,60 @@
+﻿<div class="container">
+    <div class="row mb-3">
+        <div class="col">
+            <h3>Категории</h3>
+        </div>
+        <div class="col d-flex justify-content-end">
+            <button type="button" class="btn btn-outline-success btn-sm" onclick="createCategory()">+ Добавить</button>
+        </div>
+    </div>
+    <table id="categoriesTable" class="table">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">№</th>
+                <th scope="col">Название</th>
+                <th scope="col" class="text-right" style="width: 50px;"></th>
+                <th scope="col" class="text-right" style="width: 50px;"></th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(function () {
+        loadTableData();
+
+
+    });
+
+    // Функция для загрузки данных для таблицы
+    function loadTableData() {
+        $.ajax({
+            url: '/Category/GetAllCategory',
+            type: 'GET',
+            success: function (data) {
+                fillTable(data, 1);
+            },
+            error: function (xhr, status, error) {
+                console.error('Ошибка при получении данных:', error);
+                alert('Произошла ошибка при загрузке данных. Пожалуйста, обновите страницу или попробуйте позже.');
+            }
+        });
+    }
+
+    // Функция для заполнения таблицы
+    function fillTable(data, startIndex) {
+        // Очищаем таблицу перед заполнением новыми данными
+        $('#categoriesTable tbody').empty();
+        // Заполняем таблицу данными
+        $.each(data, function (index, category) {
+            var row = '<tr><td>' + (startIndex + index) + '</td><td>' + category.text + '</td>' +
+                '<td><img src="img\\edit_24dp.svg" alt="Edit" onclick="editCategory(' + category.value + ', \'' + category.text + '\')"></td>' +
+                '<td><img src="img\\delete_24dp.svg" alt="Delete" onclick="showDeleteConfirmationModal(' + category.value + ', \'' + category.text + '\')"></td></tr>';
+            $('#categoriesTable tbody').append(row);
+        });
+    }
+
+
+
+</script>
