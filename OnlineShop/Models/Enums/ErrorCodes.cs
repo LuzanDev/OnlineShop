@@ -3,7 +3,9 @@
     public enum ErrorCodes
     {
         // Products 1 - 20
-        ProductsNotFound = 1,
+        ProductNotFound = 1,
+        ProductCollectionNotFound = 2,
+        ProductAlreadyExists = 3,
 
         // Brands 21 - 30
         BrandNotFound = 21,

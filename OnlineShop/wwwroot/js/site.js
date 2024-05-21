@@ -1,6 +1,28 @@
-﻿//                                   Admin page
+﻿
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//                                   Admin page
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Функция для загрузки формы добавления товара
+ //Функция для загрузки формы добавления товара
     function loadAddProductForm() 
     {
         $.ajax({
@@ -27,7 +49,6 @@ function loadTableBrands() {
         }
     });
 }
-
 function loadTableCategories() {
     $.ajax({
         url: "/Category/Categories",
@@ -40,13 +61,32 @@ function loadTableCategories() {
         }
     });
 }
+function loadTableProducts() {
+    $.ajax({
+        url: "/Product/Products",
+        type: "GET",
+        success: function (data) {
+            $("#mainContent").html(data); // Вставка результата AJAX-запроса в элемент #mainContent
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
 
-// Обработчик клика на элементе "Добавить продукт" 
+
+
+ //Обработчик клика на элементе "Добавить продукт"
     $(document).on("click", "#addProduct", function (e) {
         e.preventDefault();
         loadAddProductForm(); // Загрузка представления с карточками товаров в #mainContent
-        
+
     });
+$(document).on("click", "#loadProductsTable", function (e) {
+    e.preventDefault();
+    loadTableProducts();
+
+});
 
 $(document).on("click", "#loadBrandsTable", function (e) {
     e.preventDefault();
@@ -72,6 +112,32 @@ function showModal(title, content) {
     $('#exampleModal .modal-body').html(content);
     $('#exampleModal').modal('show'); 
 }
+function resetModal() {
+    // Находим модальное окно
+    var modal = document.getElementById('exampleModal');
+
+    // Находим диалоговое окно модального окна и удаляем класс для центрирования
+    var modalDialog = modal.querySelector('.modal-dialog');
+    modalDialog.classList.remove('modal-dialog-centered');
+
+    // Находим заголовок модального окна
+    var modalTitle = modal.querySelector('.modal-title');
+
+    // Находим тело модального окна
+    var modalBody = modal.querySelector('.modal-body');
+
+    // Находим футер модального окна
+    var modalFooter = modal.querySelector('.modal-footer');
+
+    // Устанавливаем пустой заголовок
+    modalTitle.textContent = '';
+
+    // Очищаем тело модального окна
+    modalBody.innerHTML = '';
+
+    // Очищаем футер модального окна
+    modalFooter.innerHTML = '';
+}
 
 // Функция для отображения уведомления успешного действия
 function showSuccessNotification(message) {
@@ -92,4 +158,42 @@ function showSuccessNotification(message) {
     setTimeout(function () {
         $('#notification-container').fadeOut();
     }, 3000);
+}
+function showDeleteConfirmationModal(id, deletedItemName, deleteFunction) {
+    resetModal();
+    var modalTitle = document.querySelector('#exampleModal .modal-title');
+    var modalBody = document.querySelector('#exampleModal .modal-body');
+
+    modalTitle.textContent = 'Подтверждение удаления';
+    modalBody.innerHTML = "Вы действительно хотите удалить <strong>" + deletedItemName + "</strong>?";
+
+    // Создаем кнопки "Отмена" и "Да"
+    var cancelButton = document.createElement('button');
+    cancelButton.setAttribute('type', 'button');
+    cancelButton.setAttribute('class', 'btn btn-secondary');
+    cancelButton.setAttribute('data-bs-dismiss', 'modal');
+    cancelButton.textContent = 'Отмена';
+
+    var confirmButton = document.createElement('button');
+    confirmButton.setAttribute('type', 'button');
+    confirmButton.setAttribute('class', 'btn btn-danger');
+    confirmButton.textContent = 'Да';
+
+    // Очищаем футер модального окна перед добавлением новых кнопок
+    var modalFooter = document.querySelector('#exampleModal .modal-footer');
+    modalFooter.innerHTML = '';
+
+    // Добавляем кнопки в футер модального окна
+    modalFooter.appendChild(cancelButton);
+    modalFooter.appendChild(confirmButton);
+
+    // Отображаем модальное окно
+    var modal = new bootstrap.Modal(document.getElementById('exampleModal'));
+    modal.show();
+
+    // Назначаем обработчик события для кнопки "Да"
+    confirmButton.onclick = function () {
+        deleteFunction(id); // Вызываем переданную функцию
+        modal.hide();
+    };
 }

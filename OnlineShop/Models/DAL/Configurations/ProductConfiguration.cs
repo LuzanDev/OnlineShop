@@ -14,7 +14,7 @@ namespace OnlineShop.Models.DAL.Configurations
             builder.Property(x => x.Price).HasColumnType("decimal(10, 2)").IsRequired();
 
             builder.HasMany(x => x.Images)
-                .WithOne(x => x.Product)
+                .WithOne()
                 .HasForeignKey(x => x.ProductId);
         }
     }

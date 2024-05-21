@@ -1,0 +1,107 @@
+﻿<div class="container">
+    <div class="row mb-3">
+        <div class="col">
+            <h3>Список товаров</h3>
+        </div>
+        <div class="col d-flex justify-content-end">
+            <button type="button" class="btn btn-outline-success btn-sm" onclick="createProduct()">+ Добавить</button>
+        </div>
+    </div>
+    <table id="productsTable" class="table align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col" class="text-left" style="width: 75px;"></th>
+                <th scope="col">Название</th>
+                <th scope="col">Описание</th>
+                <th scope="col">Бренд</th>
+                <th scope="col">Категория</th>
+                <th scope="col">Цена</th>
+                <th scope="col" class="text-right" style="width: 50px;"></th>
+                <th scope="col" class="text-right" style="width: 50px;"></th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+@* <style>
+    .table img {
+        max-width: 100%; /* Максимальная ширина изображения */
+        max-height: 100%; /* Максимальная высота изображения */
+    }
+</style> *@
+
+
+
+<script>
+    $(document).ready(function () {
+        loadTableData();
+
+    });
+    // Функция для загрузки данных для таблицы
+    function loadTableData() {
+        $.ajax({
+            url: '/Product/GetAllProducts',
+            type: 'GET',
+            success: function (data) {
+                
+                fillTable(data.data);
+            },
+            error: function (xhr) {
+                if (xhr.responseJSON && xhr.responseJSON.errorMessage) {
+                    console.error("Ошибка при получении данных:", xhr.responseJSON.errorMessage);
+                    console.error("Код ошибки:", xhr.responseJSON.errorCode);
+                    alert("Произошла ошибка при загрузке данных." + xhr.responseJSON.errorMessage);
+                } else {
+                    console.error("Произошла ошибка при загрузке данных.");
+                   // alert("Произошла ошибка при загрузке данных.");
+                }
+            }
+        });
+    }
+
+    //<tr><td>1</td><td>Adidas</td><td><img src="img\edit_24dp.svg" alt="Edit" onclick="editBrand(72, 'Adidas')"></td><td><img src="img\delete_24dp.svg" alt="Delete" onclick="deleteBrandConfirmation(72, 'Adidas')"></td></tr>
+    // Функция для заполнения таблицы
+    function fillTable(data) {
+        
+        $('#productsTable tbody').empty();
+
+        $.each(data, function (index, item) {
+            
+            var row = '<tr><td><img src="img\\' + item.images[0].fileName + '" alt="imgIcon" onclick=""></td><td>' + item.name + '</td>' +
+                '<td>' + item.description + '</td><td>' + item.brand.name + '</td><td>' + item.category.name + '</td><td>' + item.price
+                + '</td>' + '<td><img src="img\\edit_24dp.svg" alt="Edit" onclick=""></td>' +
+                '<td><img src="img\\delete_24dp.svg" alt="Delete" onclick="deleteProductConfirmation(' + item.id + ', \'' + item.name + '\')"></td></tr>';
+
+            $('#productsTable tbody').append(row);
+        });
+    }
+
+    //Функция удаление элемента с таблицы
+    function deleteProduct(id) {
+        $.ajax({
+            url: "/Product/Delete",
+            type: "DELETE",
+            data: { id: id },
+            success: function (data) {
+                console.log("Продукт успешно удален:", data);
+                loadTableData();
+                showSuccessNotification("Продукт '" + data + "' успешно удален");
+            },
+            error: function (xhr) {
+                // Произошла ошибка удаления
+                console.error("Ошибка при удалении бренда:", xhr.responseJSON.errorMessage);
+                // Ваша логика обработки ошибки, например, вывод сообщения об ошибке пользователю
+                alert("Ошибка при удалении бренда: " + xhr.responseJSON.errorMessage);
+            }
+        });
+    }
+    // Определение функции обработчика события для удаления бренда
+    function deleteProductConfirmation(id, productName) {
+        showDeleteConfirmationModal(id, productName, deleteProduct);
+    }
+
+    
+
+</script>

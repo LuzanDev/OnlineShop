@@ -1,4 +1,5 @@
-﻿namespace OnlineShop.Models.Entity
+﻿
+namespace OnlineShop.Models.Entity
 {
     public class Product
     {

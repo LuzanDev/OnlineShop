@@ -24,143 +24,246 @@
         </div>
         <!-- Бренд -->
         <div class="mb-3">
-        <label class="form-label">Бренд</label>
-        <select id="selectMenuBrand" class="form-select" aria-label="Default select example" asp-for="BrandId" required>
-            <option selected>Loading...</option>
-        </select>
-        <span asp-validation-for="BrandId" class="text-danger"></span>
+            <label class="form-label">Бренд</label>
+            <select id="selectMenuBrand" class="form-select" aria-label="Default select example" asp-for="BrandId" required>
+                <option selected>Loading...</option>
+            </select>
+            <span asp-validation-for="BrandId" class="text-danger"></span>
         </div>
         <!-- Категория -->
         <div class="mb-3">
-        <label class="form-label">Категория</label>
-        <select id="selectMenuCategory" class="form-select" aria-label="Default select example" asp-for="CategoryId" required>
-            <option selected>Loading...</option>
-        </select>
-        <span asp-validation-for="CategoryId" class="text-danger"></span>
+            <label class="form-label">Категория</label>
+            <select id="selectMenuCategory" class="form-select" aria-label="Default select example" asp-for="CategoryId" required>
+                <option selected>Loading...</option>
+            </select>
+            <span asp-validation-for="CategoryId" class="text-danger"></span>
         </div>
         <!-- Изображения -->
         <div class="mb-3">
             <label class="form-label">Изображения</label>
-            <input id="Images" type="file" name="Images" class="form-control" multiple required />
+            <input id="Images" type="file" name="Images" class="form-control" accept="image/png, image/jpeg, image/jpg" multiple required />
             <span class="text-muted">Можно выбрать несколько изображений</span>
-            <span asp-validation-for="Images" class="text-danger"></span> 
+            <span asp-validation-for="Images" class="text-danger"></span>
         </div>
-        <!-- Кнопка для отправки формы -->
-        <button type="submit" class="btn btn-primary">Добавить товар</button>
+        <div id="imagePreview" class="image-preview"></div>
+        <input type="hidden" id="imageOrder" name="ImageOrder">
+        <button type="submit" class="btn btn-primary mt-3">Добавить товар</button>
     </form>
 </div>
 
+<style>
+    .image-preview {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .image-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .preview-image {
+        max-width: 150px;
+        max-height: 150px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 5px;
+    }
+
+    .remove-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        cursor: pointer;
+    }
+</style>
+
+
+
+
 <script>
-    // Функция для проверки размера и типа файлов при выборе изображений
-    document.getElementById('Images').addEventListener('change', function () {
-        var files = this.files;
-        var validExtensions = ['jpg', 'jpeg', 'png'];
-        var maxFileSize = 5 * 1024 * 1024; // 5MB
-
-        for (var i = 0; i < files.length; i++) {
-            var file = files[i];
-            var fileName = file.name;
-            var fileSize = file.size;
-            var fileExtension = fileName.split('.').pop().toLowerCase();
-
-            // Проверка типа файла
-            if (validExtensions.indexOf(fileExtension) === -1) {
-                alert('Файл ' + fileName + ' имеет недопустимое расширение. Допустимые расширения: .jpg, .jpeg, .png.');
-                this.value = ''; // Очищаем выбранные файлы
-                return false;
-            }
-            // Проверка размера файла
-            if (fileSize > maxFileSize) {
-                alert('Файл ' + fileName + ' превышает максимально допустимый размер (2MB).');
-                this.value = ''; // Очищаем выбранные файлы
-                return false;
-            }
-        }
-    });
-
-    // Функция для загрузки данных при загрузке страницы
+    
     $(document).ready(function () {
         loadData();
 
-        function loadData() {
-            //Получение брендов
-            $.ajax({
-                url: '/Brand/GetAllBrands', // URL вашего метода действия контроллера
-                type: 'GET',
-                success: function (data) {
-                    if (data.errorMessage) {
-                        // Отображаем сообщение об ошибке в модальном окне
-                        showModal('Произошла ошибка', data.errorMessage);
-                    } else {
-                        // Обрабатываем успешный результат
-                        $('#selectMenuBrand').empty(); // очищаем текущие опции
-                        $('#selectMenuBrand').append($('<option>').val('').text('Бренд не выбран'));
-                        $.each(data, function (index, item) {
-                            $('#selectMenuBrand').append($('<option>').val(item.value).text(item.text));
-                        });
-                        console.log("Бренды успешно получены:", data);
-                    }
+        const inputElement = document.getElementById("Images");
+        const previewContainer = document.getElementById("imagePreview");
+        const imageOrderInput = document.getElementById("imageOrder");
 
-                },
-                error: function (xhr, textStatus, errorThrown) {
-                    console.log("Ошибка при получении брендов:", errorThrown);
-                }
-            });
-            //Получение категорий
-            $.ajax({
-                url: '/Category/GetAllCategory', // URL вашего метода действия контроллера
-                type: 'GET',
-                success: function (data) {
-                    if (data.errorMessage) {
-                        // Отображаем сообщение об ошибке в модальном окне
-                        showModal('Произошла ошибка', data.errorMessage);
-                    } else {
-                        // Обрабатываем успешный результат
-                        $('#selectMenuCategory').empty(); // очищаем текущие опции
-                        $('#selectMenuCategory').append($('<option>').val('').text('Категория не выбрана'));
-                        $.each(data, function (index, item) {
-                            $('#selectMenuCategory').append($('<option>').val(item.value).text(item.text));
-                        });
-                        console.log("Категории товара успешно получены:", data);
-                    }
+        inputElement.addEventListener('change', function () {
+            var files = this.files;
+            var validExtensions = ['jpg', 'jpeg', 'png'];
+            var maxFileSize = 5 * 1024 * 1024; // 5MB
 
-                },
-                error: function (xhr, textStatus, errorThrown) {
-                    console.log("Ошибка при получении категорий товара:", errorThrown);
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                var fileName = file.name;
+                var fileSize = file.size;
+                var fileExtension = fileName.split('.').pop().toLowerCase();
+
+                // Проверка типа файла
+                if (validExtensions.indexOf(fileExtension) === -1) {
+                    alert('Файл ' + fileName + ' имеет недопустимое расширение. Допустимые расширения: .jpg, .jpeg, .png.');
+                    this.value = ''; // Очищаем выбранные файлы
+                    return false;
                 }
+                // Проверка размера файла
+                if (fileSize > maxFileSize) {
+                    alert('Файл ' + fileName + ' превышает максимально допустимый размер (2MB).');
+                    this.value = ''; // Очищаем выбранные файлы
+                    return false;
+                }
+            }
+        });
+
+        inputElement.addEventListener("change", handleFiles);
+
+        function handleFiles(event) {
+            const files = event.target.files;
+            previewContainer.innerHTML = "";  // Clear previous previews
+
+            Array.from(files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const div = document.createElement("div");
+                    div.className = "image-container";
+                    div.dataset.index = index;
+
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.className = "preview-image";
+
+                    const removeBtn = document.createElement('div');
+                    removeBtn.textContent = "Удалить";
+                    removeBtn.className = "remove-btn";
+                    removeBtn.innerHTML = '❌';
+                    removeBtn.addEventListener("click", () => removeImage(index));
+
+                    div.appendChild(img);
+                    div.appendChild(removeBtn);
+                    previewContainer.appendChild(div);
+                };
+                reader.readAsDataURL(file);
             });
+
+            updateImageOrder();
         }
 
-        // Обработка кнопки создания товара
-        $('#productForm').submit(function (e) {
-            e.preventDefault();
-
-            // Создаем объект FormData
-            var formData = new FormData(this);
-
-            $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                data: formData,
-                contentType: false, // Указываем false, чтобы jQuery не устанавливал Content-Type
-                processData: false, // Указываем false, чтобы jQuery не обрабатывал данные
-                success: function (result) {
-                    if (result.success) {
-                        // Если операция успешна, выполните следующее
-                        $('#productForm')[0].reset(); // Очистить форму
-                        showModal('Добавление успешно', 'Продукт ' + result.productName + ' успешно добавлен');
-                    } else {
-                        $('#productForm')[0].reset(); // Очистить форму
-                        showModal('Произошла ошибка', 'Форма имеет не валидные данные');
-                    }
-                },
-                error: function (xhr, status, error) {
-                    // Обработать ошибку
+        function removeImage(index) {
+            const dataTransfer = new DataTransfer();
+            const files = inputElement.files;
+            Array.from(files).forEach((file, i) => {
+                if (i !== index) {
+                    dataTransfer.items.add(file);
                 }
             });
+            inputElement.files = dataTransfer.files;
+
+            const imageContainers = previewContainer.querySelectorAll('.image-container');
+            imageContainers.forEach(container => {
+                const currentIndex = parseInt(container.dataset.index);
+                if (currentIndex === index) {
+                    container.remove();
+                } else if (currentIndex > index) {
+                    container.dataset.index = currentIndex - 1;
+                }
+            });
+
+            updateImageOrder();
+        }
+
+        function updateImageOrder() {
+            const imageContainers = previewContainer.querySelectorAll('.image-container');
+            const order = Array.from(imageContainers).map(container => container.dataset.index);
+            imageOrderInput.value = order.join(',');
+        }
+
+        new Sortable(previewContainer, {
+            animation: 150,
+            onEnd: updateImageOrder
+        });
+    });
+
+    function loadData() {
+        //Получение брендов
+        $.ajax({
+            url: '/Brand/GetAllBrands', // URL вашего метода действия контроллера
+            type: 'GET',
+            success: function (data) {
+                if (data.errorMessage) {
+                    // Отображаем сообщение об ошибке в модальном окне
+                    showModal('Произошла ошибка', data.errorMessage);
+                } else {
+                    // Обрабатываем успешный результат
+                    $('#selectMenuBrand').empty(); // очищаем текущие опции
+                    $('#selectMenuBrand').append($('<option>').val('').text('Бренд не выбран'));
+                    $.each(data, function (index, item) {
+                        $('#selectMenuBrand').append($('<option>').val(item.value).text(item.text));
+                    });
+                    console.log("Бренды успешно получены:", data);
+                }
+
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Ошибка при получении брендов:", errorThrown);
+            }
+        });
+        //Получение категорий
+        $.ajax({
+            url: '/Category/GetAllCategory', // URL вашего метода действия контроллера
+            type: 'GET',
+            success: function (data) {
+                if (data.errorMessage) {
+                    // Отображаем сообщение об ошибке в модальном окне
+                    showModal('Произошла ошибка', data.errorMessage);
+                } else {
+                    // Обрабатываем успешный результат
+                    $('#selectMenuCategory').empty(); // очищаем текущие опции
+                    $('#selectMenuCategory').append($('<option>').val('').text('Категория не выбрана'));
+                    $.each(data, function (index, item) {
+                        $('#selectMenuCategory').append($('<option>').val(item.value).text(item.text));
+                    });
+                    console.log("Категории товара успешно получены:", data);
+                }
+
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Ошибка при получении категорий товара:", errorThrown);
+            }
+        });
+    }
+
+    // Обработка кнопки 
+    $('#productForm').submit(function (e) {
+        e.preventDefault();
+
+        // Создаем объект FormData
+        var formData = new FormData(this);
+
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            contentType: false, // Указываем false, чтобы jQuery не устанавливал Content-Type
+            processData: false, // Указываем false, чтобы jQuery не обрабатывал данные
+            success: function (result) {
+                if (result.success) {
+                    // Если операция успешна, выполните следующее
+                    $('#productForm')[0].reset(); // Очистить форму
+                    showSuccessNotification('Продукт ' + result.productName + ' успешно добавлен');
+                    $('.image-preview').empty();
+                } else {
+                    $('#productForm')[0].reset(); // Очистить форму
+                    showModal('Произошла ошибка', 'Форма имеет не валидные данные');
+                    $('.image-preview').empty();
+                }
+            },
+            error: function (xhr, status, error) {
+                // Обработать ошибку
+            }
         });
     });
 </script>
-
 
 

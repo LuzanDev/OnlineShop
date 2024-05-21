@@ -24,9 +24,7 @@
     $(document).ready(function () {
         loadTableData();
 
-
     });
-
     // Функция для загрузки данных для таблицы
     function loadTableData() {
         $.ajax({
@@ -35,9 +33,10 @@
             success: function (data) {
                 fillTable(data, 1);
             },
-            error: function (xhr, status, error) {
-                console.error('Ошибка при получении данных:', error);
-                alert('Произошла ошибка при загрузке данных. Пожалуйста, обновите страницу или попробуйте позже.');
+            error: function (xhr) {
+                console.error("Ошибка при получении данных:", xhr.responseJSON.errorMessage);
+                console.error("Код ошибки:", xhr.responseJSON.errorCode);
+                alert("Произошла ошибка при загрузке данных." + xhr.responseJSON.errorMessage);
             }
         });
     }
@@ -50,11 +49,228 @@
         $.each(data, function (index, category) {
             var row = '<tr><td>' + (startIndex + index) + '</td><td>' + category.text + '</td>' +
                 '<td><img src="img\\edit_24dp.svg" alt="Edit" onclick="editCategory(' + category.value + ', \'' + category.text + '\')"></td>' +
-                '<td><img src="img\\delete_24dp.svg" alt="Delete" onclick="showDeleteConfirmationModal(' + category.value + ', \'' + category.text + '\')"></td></tr>';
+                '<td><img src="img\\delete_24dp.svg" alt="Delete" onclick="deleteCategoryConfirmation(' + category.value + ', \'' + category.text + '\')"></td></tr>';
             $('#categoriesTable tbody').append(row);
         });
     }
 
+    //Функция удаление элемента с таблицы
+    function deleteCategory(id) {
+        $.ajax({
+            url: "/Category/Delete",
+            type: "DELETE",
+            data: { id: id },
+            success: function (data) {
+                console.log("Категория успешно удалена:", data);
+                loadTableData();
+                showSuccessNotification("Категория '" + data + "' успешно удалена");
+            },
+            error: function (xhr) {
+                // Произошла ошибка удаления
+                console.error("Ошибка при удалении категории:", xhr.responseJSON.errorMessage);
+                console.error("Код ошибки:", xhr.responseJSON.errorCode);
+                alert("Ошибка при удалении категории: " + xhr.responseJSON.errorMessage);
+            }
+        });
+    }
+
+    // Определение функции обработчика события для удаления категории
+    function deleteCategoryConfirmation(id, categoryName) {
+        showDeleteConfirmationModal(id, categoryName, deleteCategory);
+    }
+
+    // Функция для отображения модального окна редактирования категории
+    function editCategory(categoryValue, categoryText) {
+
+        resetModal();
+        var modal = document.getElementById('exampleModal');
+        var modalTitle = document.querySelector('#exampleModal .modal-title');
+        var modalBody = document.querySelector('#exampleModal .modal-body');
+
+        modalTitle.textContent = 'Изменить название категории';
+
+        $.get('/Category/CreateCategoryForm', function (template) {
+            modalBody.innerHTML = template;
+
+            var nameInput = document.getElementById('Name');
+            nameInput.value = categoryText;
+
+            var cancelButton = document.createElement('button');
+            cancelButton.setAttribute('type', 'button');
+            cancelButton.setAttribute('class', 'btn btn-secondary');
+            cancelButton.setAttribute('data-bs-dismiss', 'modal');
+            cancelButton.textContent = 'Отмена';
+
+            var saveButton = document.createElement('button');
+            saveButton.setAttribute('type', 'button');
+            saveButton.setAttribute('class', 'btn btn-success');
+            saveButton.setAttribute('id', 'createCategoryFormButton');
+            saveButton.textContent = 'Сохранить';
+
+            var modalFooter = document.querySelector('#exampleModal .modal-footer');
+            modalFooter.appendChild(cancelButton);
+            modalFooter.appendChild(saveButton);
+
+            var modalDialog = modal.querySelector('.modal-dialog');
+            modalDialog.classList.add('modal-dialog-centered');
+
+            var modalInstance = new bootstrap.Modal(modal, { backdrop: 'static' });
+            modalInstance.show();
+            // Устанавливаем фокус на поле ввода с небольшой задержкой после открытия модального окна
+            setTimeout(function () {
+                nameInput.focus();
+            }, 100);
+
+            nameInput.addEventListener('input', function () {
+                nameInput.setCustomValidity('');
+            });
+
+            // Обработчик события click для кнопки создания бренда
+            saveButton.addEventListener('click', async function () {
+                var form = document.getElementById('createCategoryForm');
+                var nameValue = nameInput.value.trim();
+                nameInput.setCustomValidity('');
+
+                if (nameValue.length < 2) {
+                    nameInput.setCustomValidity('Название категории должно содержать как минимум 2 символа.');
+                }
+                else {
+                    var alreadyExists = await checkCategoryUniqueness(nameValue);
+                    if (alreadyExists) {
+                        nameInput.setCustomValidity('Категория с таким названием уже существует. ' + nameInput.validationMessage);
+                    }
+                }
+
+                if (form.reportValidity()) {
+                    // Если форма проходит валидацию, можно выполнять вашу логику создания бренда
+                    console.log('Форма прошла валидацию. Можно отправлять данные.');
+
+                    $.ajax({
+                        url: "/Category/Update",
+                        type: "PUT",
+                        data: { id: categoryValue, newNameCategory: nameValue },
+                        success: function (data) {
+                            console.log("Категория успешно изменена:", data);
+                            loadTableData();
+                            modalInstance.hide(); // Скрываем модальное окно
+                            showSuccessNotification("Категория '" + data + "' успешно изменена");
+
+                        },
+                        error: function (xhr) {
+                            // Произошла ошибка изменения
+                            console.error("Ошибка при изменении категории:", xhr.responseJSON.errorMessage);
+                            console.error("Код ошибки:", xhr.responseJSON.errorCode);
+                            alert("Ошибка при изменении категории: " + xhr.responseJSON.errorMessage);
+                        }
+                    });
+
+                } else {
+                    console.log('Форма не прошла валидацию. Проверьте введённые данные.');
+                }
+            });
+        });
+    }
+
+    function createCategory() {
+        resetModal();
+        var modal = document.getElementById('exampleModal');
+        var modalTitle = document.querySelector('#exampleModal .modal-title');
+        var modalBody = document.querySelector('#exampleModal .modal-body');
+
+        modalTitle.textContent = 'Добавить новую категорию';
 
 
+        $.get('/Category/CreateCategoryForm', function (template) {
+            modalBody.innerHTML = template;
+
+            var cancelButton = document.createElement('button');
+            cancelButton.setAttribute('type', 'button');
+            cancelButton.setAttribute('class', 'btn btn-secondary');
+            cancelButton.setAttribute('data-bs-dismiss', 'modal');
+            cancelButton.textContent = 'Отмена';
+
+            var createButton = document.createElement('button');
+            createButton.setAttribute('type', 'button');
+            createButton.setAttribute('class', 'btn btn-success');
+            createButton.setAttribute('id', 'createCategoryFormButton');
+            createButton.textContent = 'Добавить';
+
+            var modalFooter = document.querySelector('#exampleModal .modal-footer');
+            modalFooter.appendChild(cancelButton);
+            modalFooter.appendChild(createButton);
+
+
+            var modalDialog = modal.querySelector('.modal-dialog');
+            modalDialog.classList.add('modal-dialog-centered');
+
+            var modalInstance = new bootstrap.Modal(modal, { backdrop: 'static' });
+            modalInstance.show();
+            // Устанавливаем фокус на поле ввода с небольшой задержкой после открытия модального окна
+            setTimeout(function () {
+                nameInput.focus();
+            }, 100);
+
+            var nameInput = document.getElementById('Name');
+            nameInput.addEventListener('input', function () {
+                nameInput.setCustomValidity('');
+            });
+
+            createButton.addEventListener('click', async function () {
+                var form = document.getElementById('createCategoryForm');
+                var nameValue = nameInput.value.trim();
+                nameInput.setCustomValidity('');
+
+                if (nameValue.length < 2) {
+                    nameInput.setCustomValidity('Название категории должно содержать как минимум 2 символа.');
+                }
+                else {
+                    var alreadyExists = await checkCategoryUniqueness(nameValue);
+                    if (alreadyExists) {
+                        nameInput.setCustomValidity('Категория с таким названием уже существует. ' + nameInput.validationMessage);
+                    }
+                }
+
+                if (form.reportValidity()) {
+                    // Если форма проходит валидацию, можно выполнять вашу логику создания бренда
+                    console.log('Форма прошла валидацию. Можно отправлять данные.');
+
+                    $.ajax({
+                        url: "/Category/Create",
+                        type: "POST",
+                        data: { nameCategory: nameValue },
+                        success: function (data) {
+                            console.log("Категория успешно добавлена:", data);
+                            loadTableData();
+                            modalInstance.hide(); // Скрываем модальное окно
+                            showSuccessNotification("Категория '" + data + "' успешно добавлена");
+
+                        },
+                        error: function (xhr) {
+                            // Произошла ошибка изменения
+                            console.error("Ошибка при добавлении категории:", xhr.responseJSON.errorMessage);
+                            console.error("Код ошибки:", xhr.responseJSON.errorCode);
+                            alert("Ошибка при ддобавлении категории: " + xhr.responseJSON.errorMessage);
+                        }
+                    });
+
+                } else {
+                    console.log('Форма не прошла валидацию. Проверьте введённые данные.');
+                }
+            });
+        });
+    }
+
+    async function checkCategoryUniqueness(categoryName) {
+        try {
+            var response = await fetch('/Category/CategoryAlreadyExists?categoryName=' + encodeURIComponent(categoryName));
+            if (response.ok) {
+                return await response.text() === 'true'; // Возвращаем результат проверки оригинальности имени бренда (true/false)
+            }
+            throw new Error('Network response was not ok.');
+        }
+        catch (error) {
+            console.error('There was a problem with the fetch operation:', error);
+            return false; // В случае ошибки возвращаем false
+        }
+    }
 </script>

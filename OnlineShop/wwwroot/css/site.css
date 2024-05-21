@@ -21,9 +21,16 @@ body {
   margin-bottom: 60px;
 }
 
-#brandsTable img {
+/*#brandsTable img, #categoriesTable img {
     cursor: pointer;
+}*/
+
+table img {
+    cursor: pointer;
+    max-width: 100%; /* Максимальная ширина изображения */
+    max-height: 100%; /* Максимальная высота изображения */
 }
+
 
 #notification-container {
     display: none;

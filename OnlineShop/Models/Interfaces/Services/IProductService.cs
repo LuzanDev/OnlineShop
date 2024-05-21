@@ -7,6 +7,8 @@ namespace OnlineShop.Models.Interfaces.Services
     public interface IProductService
     {
         Task<CollectionResult<Product>> GetAllProducts();
+        Task<BaseResult<Product>> DeleteProduct(long id);
+
         Task<BaseResult<Product>> CreateProductAsync(ProductViewModel model);
         
     }

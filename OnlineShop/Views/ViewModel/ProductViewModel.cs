@@ -30,5 +30,6 @@ namespace OnlineShop.Views.ViewModel
 
         [Display(Name = "Изображения")]
         public List<IFormFile> Images { get; set; }
+        public string ImageOrder { get; set; }
     }
 }

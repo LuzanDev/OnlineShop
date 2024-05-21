@@ -6,6 +6,7 @@ using OnlineShop.Views.ViewModel;
 using OnlineShop.Models.Entity.Result;
 using OnlineShop.Models.Entity;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using OnlineShop.Models.Services;
 
 namespace OnlineShop.Controllers
 {
@@ -18,12 +19,34 @@ namespace OnlineShop.Controllers
             _productService = productService;
         }
 
-        public IActionResult AddProduct()
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllProducts()
         {
-            return PartialView();
+            var response = await _productService.GetAllProducts();
+            if (response.IsSuccess)
+            {
+                return Json(new { data = response.Data, count = response.Count });
+            }
+            else
+            {
+                return StatusCode(500, new { errorCode = response.ErrorCode, errorMessage = response.ErrorMessage });
+            }
         }
 
-        
+        [HttpDelete]
+        public async Task<IActionResult> Delete(long id)
+        {
+            var response = await _productService.DeleteProduct(id);
+            if (response.IsSuccess)
+            {
+                return Ok(response.Data.Name);
+            }
+            else
+            {
+                return StatusCode(500, new { errorCode = response.ErrorCode, errorMessage = response.ErrorMessage });
+            }
+        }
 
 
 
@@ -40,6 +63,16 @@ namespace OnlineShop.Controllers
             {
                 return Json(new { errorMessage = "Форма заполнена не корректными данными" });
             }
+        }
+
+        public IActionResult Products()
+        {
+            return PartialView();
+        }
+
+        public IActionResult AddProduct()
+        {
+            return PartialView();
         }
     }
 

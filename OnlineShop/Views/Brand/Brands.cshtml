@@ -55,7 +55,7 @@
         $.each(data, function (index, brand) {
             var row = '<tr><td>' + (startIndex + index) + '</td><td>' + brand.text + '</td>' +
                 '<td><img src="img\\edit_24dp.svg" alt="Edit" onclick="editBrand(' + brand.value + ', \'' + brand.text + '\')"></td>' +
-                '<td><img src="img\\delete_24dp.svg" alt="Delete" onclick="showDeleteConfirmationModal(' + brand.value + ', \'' + brand.text + '\')"></td></tr>';
+                '<td><img src="img\\delete_24dp.svg" alt="Delete" onclick="deleteBrandConfirmation(' + brand.value + ', \'' + brand.text + '\')"></td></tr>';
             $('#brandsTable tbody').append(row);
         });
     }
@@ -79,51 +79,10 @@
             }
         });
     }
-
-    
-
-    // Функция для отображения модального окна перед удалением элемента
-    function showDeleteConfirmationModal(id, brandName) {
-        resetModal();
-        var modalTitle = document.querySelector('#exampleModal .modal-title');
-        var modalBody = document.querySelector('#exampleModal .modal-body');
-        
-        modalTitle.textContent = 'Подтверждение удаления';
-        modalBody.innerHTML = "Вы действительно хотите удалить <strong>" + brandName + "</strong>?";
-
-        // Создаем кнопки "Отмена" и "Да"
-        var cancelButton = document.createElement('button');
-        cancelButton.setAttribute('type', 'button');
-        cancelButton.setAttribute('class', 'btn btn-secondary');
-        cancelButton.setAttribute('data-bs-dismiss', 'modal');
-        cancelButton.textContent = 'Отмена';
-
-        var confirmButton = document.createElement('button');
-        confirmButton.setAttribute('type', 'button');
-        confirmButton.setAttribute('class', 'btn btn-danger');
-        confirmButton.textContent = 'Да';
-
-        // Очищаем футер модального окна перед добавлением новых кнопок
-        var modalFooter = document.querySelector('#exampleModal .modal-footer');
-        modalFooter.innerHTML = '';
-
-        // Добавляем кнопки в футер модального окна
-        modalFooter.appendChild(cancelButton);
-        modalFooter.appendChild(confirmButton);
-
-        // Отображаем модальное окно
-        var modal = new bootstrap.Modal(document.getElementById('exampleModal'));
-        modal.show();
-
-        
-
-        // Назначаем обработчик события для кнопки "Да"
-        confirmButton.onclick = function () {
-            deleteBrand(id);
-            modal.hide();
-        };
+    // Определение функции обработчика события для удаления бренда
+    function deleteBrandConfirmation(id, brandName) {
+        showDeleteConfirmationModal(id, brandName, deleteBrand);
     }
-    
     
     // Функция для отображения модального окна редактирования бренда
     function editBrand(brandValue, brandText) {
@@ -220,6 +179,8 @@
             });
         });
     }
+
+
 
     function createBrand() {
         resetModal();
@@ -319,7 +280,7 @@
 
 
     
-
+    
     async function checkBrandUniqueness(brandName) {
         try 
         {
@@ -335,41 +296,5 @@
             return false; // В случае ошибки возвращаем false
         }
     }
-
-
-    function resetModal() {
-        // Находим модальное окно
-        var modal = document.getElementById('exampleModal');
-
-        // Находим диалоговое окно модального окна и удаляем класс для центрирования
-        var modalDialog = modal.querySelector('.modal-dialog');
-        modalDialog.classList.remove('modal-dialog-centered');
-
-        // Находим заголовок модального окна
-        var modalTitle = modal.querySelector('.modal-title');
-
-        // Находим тело модального окна
-        var modalBody = modal.querySelector('.modal-body');
-
-        // Находим футер модального окна
-        var modalFooter = modal.querySelector('.modal-footer');
-
-        // Устанавливаем пустой заголовок
-        modalTitle.textContent = '';
-
-        // Очищаем тело модального окна
-        modalBody.innerHTML = '';
-
-        // Очищаем футер модального окна
-        modalFooter.innerHTML = '';
-    }
-
-
-
-    
-
-    
-
-    
 </script>
 
