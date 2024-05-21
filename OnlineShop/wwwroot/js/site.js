@@ -120,6 +120,9 @@ function resetModal() {
     var modalDialog = modal.querySelector('.modal-dialog');
     modalDialog.classList.remove('modal-dialog-centered');
 
+    // Сброс класса modal-lg
+    modalDialog.classList.remove('modal-lg');
+
     // Находим заголовок модального окна
     var modalTitle = modal.querySelector('.modal-title');
 
@@ -138,6 +141,7 @@ function resetModal() {
     // Очищаем футер модального окна
     modalFooter.innerHTML = '';
 }
+
 
 // Функция для отображения уведомления успешного действия
 function showSuccessNotification(message) {

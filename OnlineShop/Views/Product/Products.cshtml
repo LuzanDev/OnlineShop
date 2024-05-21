@@ -64,12 +64,23 @@
     //<tr><td>1</td><td>Adidas</td><td><img src="img\edit_24dp.svg" alt="Edit" onclick="editBrand(72, 'Adidas')"></td><td><img src="img\delete_24dp.svg" alt="Delete" onclick="deleteBrandConfirmation(72, 'Adidas')"></td></tr>
     // Функция для заполнения таблицы
     function fillTable(data) {
-        
         $('#productsTable tbody').empty();
 
         $.each(data, function (index, item) {
+            // Извлечение расширения файла из fileName
+            var extension = item.images[0].fileName.split('.').pop().toLowerCase();
+            var imgSrc;
             
-            var row = '<tr><td><img src="img\\' + item.images[0].fileName + '" alt="imgIcon" onclick=""></td><td>' + item.name + '</td>' +
+            if (extension === 'jpg' || extension === 'jpeg') 
+            {
+                imgSrc = 'data:image/jpeg;base64,' + item.images[0].data;
+            } 
+            else if (extension === 'png') 
+            {
+                imgSrc = 'data:image/png;base64,' + item.images[0].data;
+            } 
+
+            var row = '<tr><td><img src="' + imgSrc + '" alt="imgIcon" onclick=""></td><td>' + item.name + '</td>' +
                 '<td>' + item.description + '</td><td>' + item.brand.name + '</td><td>' + item.category.name + '</td><td>' + item.price
                 + '</td>' + '<td><img src="img\\edit_24dp.svg" alt="Edit" onclick=""></td>' +
                 '<td><img src="img\\delete_24dp.svg" alt="Delete" onclick="deleteProductConfirmation(' + item.id + ', \'' + item.name + '\')"></td></tr>';
@@ -77,6 +88,8 @@
             $('#productsTable tbody').append(row);
         });
     }
+
+
 
     //Функция удаление элемента с таблицы
     function deleteProduct(id) {
@@ -102,6 +115,122 @@
         showDeleteConfirmationModal(id, productName, deleteProduct);
     }
 
+    function createProduct() {
+        resetModal();
+        var modal = document.getElementById('exampleModal');
+        var modalTitle = document.querySelector('#exampleModal .modal-title');
+        var modalBody = document.querySelector('#exampleModal .modal-body');
+
+        modalTitle.textContent = 'Добавление нового товара';
+
+        // Загрузка HTML-шаблона формы через AJAX
+        $.get('/Product/AddProduct', function (template) {
+            // Добавление полученного HTML в модальное окно
+            modalBody.innerHTML = template;
+
+            // Скрытие кнопки "Добавить товар"
+            var existingSubmitButton = modalBody.querySelector('button[type="submit"]');
+            existingSubmitButton.style.display = 'none';
+
+            // Нахождение формы на загруженной странице
+            var form = modalBody.querySelector('#productForm');
+
+            // Поиск стилей и скриптов в загруженной форме
+            var styles = $(template).filter('style').add($(template).find('style')).toArray();
+            var scripts = $(template).filter('script').add($(template).find('script')).toArray();
+
+            // Добавление стилей в текущий документ
+            styles.forEach(function (style) {
+                document.head.appendChild(style);
+            });
+
+            // Добавление скриптов в текущий документ
+            scripts.forEach(function (script) {
+                var newScript = document.createElement('script');
+                if (script.src) {
+                    newScript.src = script.src;
+                } else {
+                    newScript.textContent = script.textContent;
+                }
+                document.body.appendChild(newScript);
+            });
+
+            var cancelButton = document.createElement('button');
+            cancelButton.setAttribute('type', 'button');
+            cancelButton.setAttribute('class', 'btn btn-secondary');
+            cancelButton.setAttribute('data-bs-dismiss', 'modal');
+            cancelButton.textContent = 'Отмена';
+
+            var createButton = document.createElement('button');
+            createButton.setAttribute('type', 'button');
+            createButton.setAttribute('class', 'btn btn-success');
+            createButton.setAttribute('id', 'createProductFormButton');
+            createButton.textContent = 'Добавить';
+
+            var modalFooter = document.querySelector('#exampleModal .modal-footer');
+            modalFooter.appendChild(cancelButton);
+            modalFooter.appendChild(createButton);
+
+            var modalDialog = modal.querySelector('.modal-dialog');
+            modalDialog.classList.add('modal-lg');
+            modalDialog.classList.add('modal-dialog-centered');
+
+            var modalInstance = new bootstrap.Modal(modal, { backdrop: 'static' });
+            modalInstance.show();
+
+            setTimeout(function () {
+                nameInput.focus();
+            }, 100);
+
+            var nameInput = document.getElementById('Name');
+
+            // Назначение обработчика события на новую кнопку
+            createButton.addEventListener('click', function () {
+                // Проверяем валидность формы
+                if (form.checkValidity()) 
+                {
+                    // Находим кнопку "Добавить товар" в загруженной форме
+                    var submitButton = form.querySelector('button[type="submit"]');
+                    if (submitButton) 
+                    {
+                        // Вызываем обработчик клика кнопки "Добавить товар"
+                        submitButton.click();
+                        modalInstance.hide();
+                        modalInstance._element.addEventListener('hidden.bs.modal', function () {
+                            setTimeout(function () {
+                                loadTableData();
+                            }, 500);
+                        });
+                    } 
+                    else 
+                    {
+                        console.error('Кнопка "Добавить товар" не найдена');
+                    }
+                } 
+                else 
+                {
+                    form.reportValidity();
+                }
+            });
+
+            // Устанавливаем обработчик формы после ее загрузки
+            // form.addEventListener('submit', function (event) {
+            //     event.preventDefault();
+            //     // Ваша логика обработки отправки формы здесь
+            //     console.log('Форма отправлена');
+            // });
+
+        });
+    }
+
+
+
+
     
+
+
+
+
+
 
 </script>

@@ -1,7 +1,5 @@
 ﻿@model OnlineShop.Views.ViewModel.ProductViewModel
-
-<div class="container">
-    <h1 class="mb-4">Добавление товара</h1>
+    
     <!-- Форма добавления товара -->
     <form asp-action="Create" method="post" enctype="multipart/form-data" id="productForm">
         <!-- Имя товара -->
@@ -49,7 +47,6 @@
         <input type="hidden" id="imageOrder" name="ImageOrder">
         <button type="submit" class="btn btn-primary mt-3">Добавить товар</button>
     </form>
-</div>
 
 <style>
     .image-preview {
@@ -78,9 +75,6 @@
         cursor: pointer;
     }
 </style>
-
-
-
 
 <script>
     
@@ -251,8 +245,9 @@
                 if (result.success) {
                     // Если операция успешна, выполните следующее
                     $('#productForm')[0].reset(); // Очистить форму
-                    showSuccessNotification('Продукт ' + result.productName + ' успешно добавлен');
                     $('.image-preview').empty();
+                    showSuccessNotification('Продукт ' + result.productName + ' успешно добавлен');
+                    
                 } else {
                     $('#productForm')[0].reset(); // Очистить форму
                     showModal('Произошла ошибка', 'Форма имеет не валидные данные');

@@ -7,7 +7,7 @@ namespace OnlineShop.Models.Entity
     {
         public int Id { get; set; }
         public string FileName { get; set; }
-        [JsonIgnore]
+        //[JsonIgnore]
         public byte[] Data { get; set; }
         public int Order { get; set; }
         public long ProductId { get; set; }
