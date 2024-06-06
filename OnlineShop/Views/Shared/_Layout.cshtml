@@ -29,36 +29,47 @@
             </div>
         </div>
     </div>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">OnlineShop</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Index">AdminPanel</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+    <div class="container">
+    <header class="header">
+        <div class="d-none d-md-block"></div> <!-- Пустой блок для выравнивания кнопок -->
+        <a aria-label="Главная страница OnlineShop" href="#" title="Главная страница OnlineShop" class="btn-main-page mx-auto">
+            <img src="/img/shop-logo.png" alt="Online Shop Logo" class="shop-logo-icon">
+        </a>
+        <div class="header-buttons d-flex">
+            <button aria-label="Страница входа" title="Войти" class="btn-input">
+                <img src="/img/user.svg" alt="User Logo" class="user-icon">
+            </button>
+            <button aria-label="Товаров в избранном: 0." title="Избранное" class="btn-favorite">
+                <img src="/img/favorite_border.svg" alt="Favorite Logo" class="favorite-icon">
+            </button>
+            <button aria-label="Товаров в корзине: 0." title="Корзина" class="btn-cart">
+                <img src="/img/cart.svg" alt="Cart Logo" class="cart-icon">
+            </button>
+        </div>
     </header>
+    </div>
+    <div class="container">
+    <div class="nav-container">
+        <button class="btn-left" aria-label="Прокрутить к началу меню навигации.">
+            <img src="/img/arrow-left.svg" alt="Arrow Left" class="btn-arrow-left">
+        </button>
+        <nav class="nav-item-header">
+            <ul aria-label="Для навигации используйте клавиши со стрелками" class="ul-main-content">
+                <!-- Загрузка динамически -->
+            </ul>
+        </nav>
+        <button class="btn-right" aria-label="Прокрутить к началу меню навигации.">
+            <img src="/img/arrow-right.svg" alt="Arrow Right" class="btn-arrow-right visible">
+        </button>
+    </div>
+    <!-- Сюда добавить поиск -->
+    </div>
     <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
         <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
             <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
         </symbol>
     </svg>
-    
+
     <div class="container">
         <div id="notification-container"></div>
         <main role="main" class="pb-3">
@@ -78,3 +89,97 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+
+
+<script>
+    $(document).ready(function () {
+        loadListCategory();
+    });
+
+    function loadListCategory() {
+        $.ajax({
+            url: '/Category/GetAllCategory',
+            type: 'GET',
+            success: function (data) {
+                fillNavBarListContainer(data);
+            },
+            error: function (xhr, status, error) {
+                console.error('Ошибка при получении данных:', error);
+                alert('Произошла ошибка при загрузке данных. Пожалуйста, обновите страницу или попробуйте позже.');
+            }
+        });
+    }
+
+    function fillNavBarListContainer(data) {
+        var ul = $('.ul-main-content');
+        ul.empty(); // Очищаем существующий список
+
+        data.forEach(function (item) {
+
+            var li = $('<li>').addClass('list-item');
+            var url = `http://localhost:5139/shopping/${item.value}/all`;
+            var a = $('<a>')
+                .attr('tabindex', '0')
+                .attr('role', 'button')
+                .attr('href', url)
+                .addClass('link-list-item')
+                .text(item.text);
+
+            li.append(a);
+            ul.append(li);
+
+        });
+        updateButtons();
+    }
+
+    /* ____Стрелки______ */
+    const navHeader = document.querySelector('.nav-item-header');
+    const ulContent = document.querySelector('.ul-main-content');
+    const btnLeft = document.querySelector('.btn-left .btn-arrow-left');
+    const btnRight = document.querySelector('.btn-right .btn-arrow-right');
+
+    let scrollAmount = 0;
+    const scrollStep = 200;
+
+    function updateButtons() {
+        const maxScrollLeft = ulContent.scrollWidth - navHeader.clientWidth;
+        btnLeft.classList.toggle('visible', scrollAmount > 0);
+        btnRight.classList.toggle('visible', scrollAmount < maxScrollLeft);
+    }
+
+    document.querySelector('.btn-left').addEventListener('click', () => {
+        if (scrollAmount > 0) {
+            scrollAmount -= scrollStep;
+            if (scrollAmount < 0) {
+                scrollAmount = 0;
+            }
+            ulContent.style.transform = `translateX(-${scrollAmount}px)`;
+        }
+        updateButtons();
+    });
+
+    document.querySelector('.btn-right').addEventListener('click', () => {
+        const maxScrollLeft = ulContent.scrollWidth - navHeader.clientWidth;
+        if (scrollAmount < maxScrollLeft) {
+            scrollAmount += scrollStep;
+            if (scrollAmount > maxScrollLeft) {
+                scrollAmount = maxScrollLeft;
+            }
+            ulContent.style.transform = `translateX(-${scrollAmount}px)`;
+        }
+        updateButtons();
+    });
+
+    window.addEventListener('load', () => {
+        const maxScrollLeft = ulContent.scrollWidth - navHeader.clientWidth;
+        btnRight.classList.toggle('visible', maxScrollLeft > 0); // Отображаем кнопку, если есть что прокручивать вправо
+        updateButtons();
+    });
+
+
+    window.addEventListener('resize', () => {
+        const maxScrollLeft = ulContent.scrollWidth - navHeader.clientWidth;
+        btnRight.classList.toggle('visible', maxScrollLeft > 0); // Обновляем видимость кнопки при изменении размера экрана
+        updateButtons();
+    });
+</script>

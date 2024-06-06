@@ -7,6 +7,7 @@ using OnlineShop.Models.Entity.Result;
 using OnlineShop.Models.Entity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using OnlineShop.Models.Services;
+using OnlineShop.Models.Enums;
 
 namespace OnlineShop.Controllers
 {
@@ -19,8 +20,8 @@ namespace OnlineShop.Controllers
             _productService = productService;
         }
 
-
         [HttpGet]
+        [Route("Product/GetAllProducts")]
         public async Task<IActionResult> GetAllProducts()
         {
             var response = await _productService.GetAllProducts();
@@ -35,6 +36,7 @@ namespace OnlineShop.Controllers
         }
 
         [HttpDelete]
+        [Route("Product/Delete")]
         public async Task<IActionResult> Delete(long id)
         {
             var response = await _productService.DeleteProduct(id);
@@ -48,10 +50,23 @@ namespace OnlineShop.Controllers
             }
         }
 
-
-
+        [HttpPut]
+        [Route("Product/Update")]
+        public async Task<IActionResult> Update( long id,  ProductViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var response = await _productService.UpdateProduct(id, model);
+                return Json(new { success = true, productName = response.Data.Name });
+            }
+            else
+            {
+                return Json(new { errorMessage = "Форма заполнена не корректными данными" });
+            }
+        }
 
         [HttpPost]
+        [Route("Product/Create")]
         public async Task<IActionResult> Create(ProductViewModel model)
         {
             if (ModelState.IsValid)
@@ -65,11 +80,34 @@ namespace OnlineShop.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("Product/Products")]
         public IActionResult Products()
         {
             return PartialView();
         }
 
+        [HttpGet]
+        [Route("Product/{id}")]
+        public async Task<IActionResult> Product(long id)
+        {
+            var response = await _productService.GetProductById(id);
+            if (response.IsSuccess)
+            {
+                return View(response.Data);
+            }
+            else if (response.ErrorCode == (int)ErrorCodes.ProductNotFound)
+            {
+                return NotFound(new { errorCode = response.ErrorCode, errorMessage = response.ErrorMessage });
+            }
+            else
+            {
+                return StatusCode(500, new { errorCode = response.ErrorCode, errorMessage = response.ErrorMessage });
+            }
+        }
+
+        [HttpGet]
+        [Route("Product/AddProduct")]
         public IActionResult AddProduct()
         {
             return PartialView();

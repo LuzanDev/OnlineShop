@@ -1,12 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using OnlineShop.Models.Entity;
 using OnlineShop.Models.Entity.Result;
 using OnlineShop.Models.Enums;
 using OnlineShop.Models.Interfaces.Repository;
 using OnlineShop.Models.Interfaces.Services;
 using OnlineShop.Views.ViewModel;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace OnlineShop.Models.Services
 {
@@ -19,12 +17,12 @@ namespace OnlineShop.Models.Services
             _productRepository = productRepository;
         }
 
-        
+
 
         public async Task<CollectionResult<Product>> GetAllProducts()
         {
             var products = await _productRepository.GetAll()
-                .Include(x =>x.Images)
+                .Include(x => x.Images)
                 .Include(x => x.Brand)
                 .Include(x => x.Category)
                 .ToListAsync();
@@ -131,6 +129,65 @@ namespace OnlineShop.Models.Services
             return productImages;
         }
 
+        public async Task<BaseResult<Product>> UpdateProduct(long id, ProductViewModel model)
+        {
+            var product = await _productRepository.GetAll()
+                .Include(x => x.Images)
+                .FirstOrDefaultAsync(x => x.Id == id);
 
+            product.Images = product.Images.OrderBy(image => image.Order).ToList();
+
+
+            product.Name = model.Name;
+            product.Description = model.Description;
+            product.Price = model.Price;
+            product.CategoryId = model.CategoryId;
+            product.BrandId = model.BrandId;
+
+            List<int> orderIndexes = model.ImageOrder.Split(',').Select(int.Parse).ToList();
+            List<ProductImage> sortedImages = new List<ProductImage>();
+
+            for (int i = 0; i < product.Images.Count; i++)
+            {
+                sortedImages.Add(product.Images[orderIndexes[i]]);
+                sortedImages[i].Order = i;
+            }
+
+            product.Images = sortedImages;
+
+            await _productRepository.Update(product);
+            return new BaseResult<Product>()
+            {
+                Data = product,
+            };
+
+        }
+
+        public async Task<BaseResult<Product>> GetProductById(long id)
+        {
+            var product = await _productRepository.GetAll()
+                .Include (x => x.Images)
+                .Include(x => x.Brand)
+                .Include (x => x.Category)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (product == null)
+            {
+                return new BaseResult<Product>()
+                {
+                    ErrorMessage = "ProductNotFound",
+                    ErrorCode = (int)ErrorCodes.ProductNotFound
+                };
+            }
+            else
+            {
+                product.Images = product.Images.OrderBy(image => image.Order).ToList();
+                return new BaseResult<Product>()
+                {
+                    Data = product,
+                };
+            }
+
+        }
     }
 }

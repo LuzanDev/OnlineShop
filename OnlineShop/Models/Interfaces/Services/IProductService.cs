@@ -8,8 +8,10 @@ namespace OnlineShop.Models.Interfaces.Services
     {
         Task<CollectionResult<Product>> GetAllProducts();
         Task<BaseResult<Product>> DeleteProduct(long id);
-
         Task<BaseResult<Product>> CreateProductAsync(ProductViewModel model);
+        Task<BaseResult<Product>> UpdateProduct(long id,ProductViewModel model);
+        Task<BaseResult<Product>> GetProductById(long id);
+
         
     }
 }
