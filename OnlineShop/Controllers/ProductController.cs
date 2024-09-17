@@ -21,7 +21,7 @@ namespace OnlineShop.Controllers
         }
 
         [HttpGet]
-        [Route("Product/GetAllProducts")]
+        [Route("product/get-all-products")]
         public async Task<IActionResult> GetAllProducts()
         {
             var response = await _productService.GetAllProducts();
@@ -66,7 +66,7 @@ namespace OnlineShop.Controllers
         }
 
         [HttpPost]
-        [Route("Product/Create")]
+        [Route("product/create")]
         public async Task<IActionResult> Create(ProductViewModel model)
         {
             if (ModelState.IsValid)
@@ -81,15 +81,27 @@ namespace OnlineShop.Controllers
         }
 
         [HttpGet]
-        [Route("Product/Products")]
-        public IActionResult Products()
+        [Route("products")]
+        public async Task<IActionResult> Products()
         {
-            return PartialView();
-        }
+            var response = await _productService.GetAllProducts();
+            if (response.IsSuccess)
+            {
+                return View(response.Data);
+            }
+            else if (response.ErrorCode == (int)ErrorCodes.ProductNotFound)
+            {
+                return NotFound(new { errorCode = response.ErrorCode, errorMessage = response.ErrorMessage });
+            }
+            else
+            {
+                return StatusCode(500, new { errorCode = response.ErrorCode, errorMessage = response.ErrorMessage });
+            }
 
+        }
         [HttpGet]
-        [Route("Product/{id}")]
-        public async Task<IActionResult> Product(long id)
+        [Route("product/{id:long}")]
+        public async Task<IActionResult> Product([FromRoute] long id)
         {
             var response = await _productService.GetProductById(id);
             if (response.IsSuccess)
@@ -107,8 +119,15 @@ namespace OnlineShop.Controllers
         }
 
         [HttpGet]
-        [Route("Product/AddProduct")]
-        public IActionResult AddProduct()
+        [Route("product/add-product-form")]
+        public IActionResult AddProductForm()
+        {
+            return PartialView();
+        }
+
+        [HttpGet]
+        [Route("product/management")]
+        public IActionResult ProductManagement()
         {
             return PartialView();
         }

@@ -1,41 +1,22 @@
-﻿
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//                                   Admin page
+﻿//                                   Admin page
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
- //Функция для загрузки формы добавления товара
-    function loadAddProductForm() 
-    {
-        $.ajax({
-            url: "/Product/AddProduct", 
-            type: "GET",
-            success: function (data) {
-                $("#mainContent").html(data); // Вставка результата AJAX-запроса в элемент #mainContent
-            },
-            error: function (error) {
-                console.log(error);
-            }
-        });
-}
+
+//Testing
+
+
+//    function loadAddProductForm()
+//    {
+//        $.ajax({
+//            url: "/product/add-product-form", 
+//            type: "GET",
+//            success: function (data) {
+//                $("#mainContent").html(data); // Вставка результата AJAX-запроса в элемент #mainContent
+//            },
+//            error: function (error) {
+//                console.log(error);
+//            }
+//        });
+//}
 
 function loadTableBrands() {
     $.ajax({
@@ -63,7 +44,7 @@ function loadTableCategories() {
 }
 function loadTableProducts() {
     $.ajax({
-        url: "/Product/Products",
+        url: "/product/management",
         type: "GET",
         success: function (data) {
             $("#mainContent").html(data); // Вставка результата AJAX-запроса в элемент #mainContent
@@ -77,11 +58,11 @@ function loadTableProducts() {
 
 
  //Обработчик клика на элементе "Добавить продукт"
-    $(document).on("click", "#addProduct", function (e) {
-        e.preventDefault();
-        loadAddProductForm(); // Загрузка представления с карточками товаров в #mainContent
+    //$(document).on("click", "#addProduct", function (e) {
+    //    e.preventDefault();
+    //    loadAddProductForm(); // Загрузка представления с карточками товаров в #mainContent
 
-    });
+    //});
 $(document).on("click", "#loadProductsTable", function (e) {
     e.preventDefault();
     loadTableProducts();
@@ -141,8 +122,6 @@ function resetModal() {
     // Очищаем футер модального окна
     modalFooter.innerHTML = '';
 }
-
-
 // Функция для отображения уведомления успешного действия
 function showSuccessNotification(message) {
     var notification = `

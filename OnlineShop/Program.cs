@@ -23,8 +23,26 @@ app.UseRouting();
 
 app.UseAuthorization();
 
+//app.MapControllerRoute(
+//    name: "root",
+//    pattern: "",
+//    defaults: new { controller = "Product", action = "Products" });
+
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path == "/")
+    {
+        context.Response.Redirect("/products");
+        return;
+    }
+
+    await next();
+});
+
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Product}/{action=Products}/{id?}");
 
 app.Run();
+
+

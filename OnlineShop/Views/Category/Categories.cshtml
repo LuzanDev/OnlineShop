@@ -48,8 +48,8 @@
         // Заполняем таблицу данными
         $.each(data, function (index, category) {
             var row = '<tr><td>' + (startIndex + index) + '</td><td>' + category.text + '</td>' +
-                '<td><img src="img\\edit_24dp.svg" alt="Edit" onclick="editCategory(' + category.value + ', \'' + category.text + '\')"></td>' +
-                '<td><img src="img\\delete_24dp.svg" alt="Delete" onclick="deleteCategoryConfirmation(' + category.value + ', \'' + category.text + '\')"></td></tr>';
+                '<td><img src="/img/edit_24dp.svg" alt="Edit" onclick="editCategory(' + category.value + ', \'' + category.text + '\')"></td>' +
+                '<td><img src="/img/delete_24dp.svg" alt="Delete" onclick="deleteCategoryConfirmation(' + category.value + ', \'' + category.text + '\')"></td></tr>';
             $('#categoriesTable tbody').append(row);
         });
     }

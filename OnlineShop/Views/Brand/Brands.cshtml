@@ -54,8 +54,8 @@
         // Заполняем таблицу данными
         $.each(data, function (index, brand) {
             var row = '<tr><td>' + (startIndex + index) + '</td><td>' + brand.text + '</td>' +
-                '<td><img src="img\\edit_24dp.svg" alt="Edit" onclick="editBrand(' + brand.value + ', \'' + brand.text + '\')"></td>' +
-                '<td><img src="img\\delete_24dp.svg" alt="Delete" onclick="deleteBrandConfirmation(' + brand.value + ', \'' + brand.text + '\')"></td></tr>';
+                '<td><img src="/img/edit_24dp.svg" alt="Edit" onclick="editBrand(' + brand.value + ', \'' + brand.text + '\')"></td>' +
+                '<td><img src="/img/delete_24dp.svg" alt="Delete" onclick="deleteBrandConfirmation(' + brand.value + ', \'' + brand.text + '\')"></td></tr>';
             $('#brandsTable tbody').append(row);
         });
     }

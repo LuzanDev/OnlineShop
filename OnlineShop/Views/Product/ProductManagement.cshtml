@@ -1,0 +1,526 @@
+﻿﻿<div class="container">
+    <div class="row mb-3">
+        <div class="col">
+            <h3>Список товаров</h3>
+        </div>
+        <div class="col d-flex justify-content-end">
+            <button type="button" class="btn btn-outline-success btn-sm" onclick="createProduct()">+ Добавить</button>
+        </div>
+    </div>
+    <table id="productsTable" class="table align-middle table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col" class="text-left" style="width: 75px;"></th>
+                <th scope="col">Название</th>
+                <th scope="col">Описание</th>
+                <th scope="col">Бренд</th>
+                <th scope="col">Категория</th>
+                <th scope="col">Цена</th>
+                <th scope="col" class="text-right" style="width: 50px;"></th>
+                <th scope="col" class="text-right" style="width: 50px;"></th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+
+
+<script>
+    $(document).ready(function () {
+        loadTableData();
+
+    });
+    // Загрузка данных для таблицы из БД
+    function loadTableData() {
+        $.ajax({
+            url: '/product/get-all-products',
+            type: 'GET',
+            success: function (data) {
+
+                fillTable(data.data);
+            },
+            error: function (xhr) {
+                if (xhr.responseJSON && xhr.responseJSON.errorMessage) {
+                    console.error("Ошибка при получении данных:", xhr.responseJSON.errorMessage);
+                    console.error("Код ошибки:", xhr.responseJSON.errorCode);
+                    alert("Произошла ошибка при загрузке данных." + xhr.responseJSON.errorMessage);
+                } else {
+                    console.error("Произошла ошибка при загрузке данных.");
+                    // alert("Произошла ошибка при загрузке данных.");
+                }
+            }
+        });
+    }
+    // Заполнение таблицы
+    function fillTable(data) {
+        $('#productsTable tbody').empty();
+
+        $.each(data, function (index, item) {
+            // Извлечение расширения файла из fileName
+            var extension = item.images[0].fileName.split('.').pop().toLowerCase();
+            var imgSrc;
+
+            if (extension === 'jpg' || extension === 'jpeg') {
+                imgSrc = 'data:image/jpeg;base64,' + item.images[0].data;
+            }
+            else if (extension === 'png') {
+                imgSrc = 'data:image/png;base64,' + item.images[0].data;
+            }
+
+            var row = '<tr data-item=\'' + JSON.stringify(item) + '\'><td><img src="' + imgSrc + '" alt="imgIcon" class="product-image" data-id="' + item.id + '"></td><td>' + item.name + '</td>' +
+            '<td>' + item.description + '</td><td>' + item.brand.name + '</td><td>' + item.category.name + '</td><td>' + item.price
+            + '</td>' + '<td><img src="/img/edit_24dp.svg" alt="Edit" class="edit-product"></td>' +
+            '<td><img src="/img/delete_24dp.svg" alt="Delete" onclick="deleteProductConfirmation(' + item.id + ', \'' + item.name + '\')"></td></tr>';
+
+
+            $('#productsTable tbody').append(row);
+        });
+
+        $('.edit-product').click(function () {
+            var itemJson = $(this).closest('tr').attr('data-item');
+            editProduct(itemJson);
+        });
+
+        // Обработчик клика по изображению для перехода к товару
+    $('.product-image').click(function () {
+        var productId = $(this).data('id');
+        window.open('/product/' + productId, '_blank');
+    });
+    }
+
+
+
+    // Удаление элемента с таблицы
+    function deleteProduct(id) {
+        $.ajax({
+            url: "/Product/Delete",
+            type: "DELETE",
+            data: { id: id },
+            success: function (data) {
+                console.log("Продукт успешно удален:", data);
+                loadTableData();
+                showSuccessNotification("Продукт '" + data + "' успешно удален");
+            },
+            error: function (xhr) {
+                // Произошла ошибка удаления
+                console.error("Ошибка при удалении бренда:", xhr.responseJSON.errorMessage);
+                // Ваша логика обработки ошибки, например, вывод сообщения об ошибке пользователю
+                alert("Ошибка при удалении бренда: " + xhr.responseJSON.errorMessage);
+            }
+        });
+    }
+    // Определение функции обработчика события для удаления бренда
+    function deleteProductConfirmation(id, productName) {
+        showDeleteConfirmationModal(id, productName, deleteProduct);
+    }
+
+    // Обработчик нажатия кнопки "Добавить продукт"
+    function createProduct() {
+        resetModal();
+        var modal = document.getElementById('exampleModal');
+        var modalTitle = document.querySelector('#exampleModal .modal-title');
+        var modalBody = document.querySelector('#exampleModal .modal-body');
+
+        modalTitle.textContent = 'Добавление нового товара';
+
+        // Загрузка HTML-шаблона формы через AJAX
+        $.get('/product/add-product-form', function (template) {
+            // Добавление полученного HTML в модальное окно
+            modalBody.innerHTML = template;
+
+            // Скрытие кнопки "Добавить товар"
+            var existingSubmitButton = modalBody.querySelector('button[type="submit"]');
+            existingSubmitButton.style.display = 'none';
+
+            // Нахождение формы на загруженной странице
+            var form = modalBody.querySelector('#productForm');
+
+            // Поиск стилей и скриптов в загруженной форме
+            var styles = $(template).filter('style').add($(template).find('style')).toArray();
+            var scripts = $(template).filter('script').add($(template).find('script')).toArray();
+
+            // Добавление стилей в текущий документ
+            styles.forEach(function (style) {
+                document.head.appendChild(style);
+            });
+
+            // Добавление скриптов в текущий документ
+            scripts.forEach(function (script) {
+                var newScript = document.createElement('script');
+                if (script.src) {
+                    newScript.src = script.src;
+                } else {
+                    newScript.textContent = script.textContent;
+                }
+                document.body.appendChild(newScript);
+            });
+
+            var cancelButton = document.createElement('button');
+            cancelButton.setAttribute('type', 'button');
+            cancelButton.setAttribute('class', 'btn btn-secondary');
+            cancelButton.setAttribute('data-bs-dismiss', 'modal');
+            cancelButton.textContent = 'Отмена';
+
+            var createButton = document.createElement('button');
+            createButton.setAttribute('type', 'button');
+            createButton.setAttribute('class', 'btn btn-success');
+            createButton.setAttribute('id', 'createProductFormButton');
+            createButton.textContent = 'Добавить';
+
+            var modalFooter = document.querySelector('#exampleModal .modal-footer');
+            modalFooter.appendChild(cancelButton);
+            modalFooter.appendChild(createButton);
+
+            var modalDialog = modal.querySelector('.modal-dialog');
+            modalDialog.classList.add('modal-lg');
+            modalDialog.classList.add('modal-dialog-centered');
+
+            var modalInstance = new bootstrap.Modal(modal, { backdrop: 'static' });
+            modalInstance.show();
+
+            setTimeout(function () {
+                nameInput.focus();
+            }, 100);
+
+            var nameInput = document.getElementById('Name');
+
+            // Назначение обработчика события на новую кнопку
+            createButton.addEventListener('click', function () {
+                // Проверяем валидность формы
+                if (form.checkValidity()) {
+                    // Находим кнопку "Добавить товар" в загруженной форме
+                    var submitButton = form.querySelector('button[type="submit"]');
+                    if (submitButton) {
+                        // Вызываем обработчик клика кнопки "Добавить товар"
+                        submitButton.click();
+                        modalInstance.hide();
+                        modalInstance._element.addEventListener('hidden.bs.modal', function () {
+                            setTimeout(function () {
+                                loadTableData();
+                            }, 500);
+                        });
+                    }
+                    else {
+                        console.error('Кнопка "Добавить товар" не найдена');
+                    }
+                }
+                else {
+                    form.reportValidity();
+                }
+            });
+        });
+    }
+
+    // Отображения модального окна редактирования товара
+    function editProduct(itemJson) {
+
+        var item = JSON.parse(itemJson);
+
+        resetModal();
+        var modal = document.getElementById('exampleModal');
+        var modalTitle = document.querySelector('#exampleModal .modal-title');
+        var modalBody = document.querySelector('#exampleModal .modal-body');
+
+        modalTitle.textContent = 'Редактирование товара';
+
+        // Загрузка HTML-шаблона формы через AJAX
+        $.get('/product/add-product-form', function (template) {
+            modalBody.innerHTML = template;
+
+            var nameProduct = document.getElementById('Name');
+
+            // Скрытие кнопки "Добавить товар"
+            var existingSubmitButton = modalBody.querySelector('button[type="submit"]');
+            existingSubmitButton.style.display = 'none';
+
+            // Скрываем блок с загрузкой изображений и удаляем атрибут required
+            var imageUploadDiv = document.getElementById('Images').closest('.mb-3');
+            if (imageUploadDiv) {
+                document.getElementById('Images').removeAttribute('required');
+                imageUploadDiv.style.display = 'none';
+            }
+
+            // Нахождение формы на загруженной странице
+            var form = modalBody.querySelector('#productForm');
+
+            // Поиск стилей и скриптов в загруженной форме
+            var styles = $(template).filter('style').add($(template).find('style')).toArray();
+            var scripts = $(template).filter('script').add($(template).find('script')).toArray();
+
+            // Добавление стилей в текущий документ
+            styles.forEach(function (style) {
+                document.head.appendChild(style);
+            });
+
+            // Добавление скриптов в текущий документ
+            scripts.forEach(function (script) {
+                var newScript = document.createElement('script');
+                if (script.src) {
+                    newScript.src = script.src;
+                } else {
+                    newScript.textContent = script.textContent;
+                }
+                document.body.appendChild(newScript);
+            });
+
+
+            // Настройка изображений
+            setupImagePreview(item.images);
+
+            // Настройка кнопок и обработчиков событий
+            setupEventHandlers();
+
+
+
+            var cancelButton = document.createElement('button');
+            cancelButton.setAttribute('type', 'button');
+            cancelButton.setAttribute('class', 'btn btn-secondary');
+            cancelButton.setAttribute('data-bs-dismiss', 'modal');
+            cancelButton.textContent = 'Отмена';
+
+            var saveButton = document.createElement('button');
+            saveButton.setAttribute('type', 'button');
+            saveButton.setAttribute('class', 'btn btn-success');
+            saveButton.setAttribute('id', 'createProductFormButton');
+            saveButton.textContent = 'Сохранить';
+
+            var modalFooter = document.querySelector('#exampleModal .modal-footer');
+            modalFooter.appendChild(cancelButton);
+            modalFooter.appendChild(saveButton);
+
+            var modalDialog = modal.querySelector('.modal-dialog');
+            modalDialog.classList.add('modal-lg');
+            modalDialog.classList.add('modal-dialog-centered');
+
+            var modalInstance = new bootstrap.Modal(modal, { backdrop: 'static' });
+            modalInstance.show();
+
+            setTimeout(function () {
+                fillFormWithItemData(item);
+                nameProduct.focus();
+            }, 200);
+
+            // Обработчик события click для кнопки создания бренда
+            saveButton.addEventListener('click', function () {
+                // Проверяем валидность формы
+                if (form.checkValidity())
+                {
+                    if (areFormDataEqual(item))
+                    {
+                        alert("Данные не были изменены");
+                    }
+                    else
+                    {
+                        var formData = new FormData(form);
+                        formData.append('id', item.id); // Добавляем id к formData
+                        $.ajax({
+                            url: "/Product/Update",
+                            type: "PUT",
+                            data: formData,
+                            processData: false, // Не обрабатываем данные формы
+                            contentType: false, // Не устанавливаем тип содержимого
+                            success: function (data) {
+                                console.log("Товар успешно изменен:", data.productName);
+                                modalInstance.hide();
+                                modalInstance._element.addEventListener('hidden.bs.modal', function () {
+                                    setTimeout(function () {
+                                        loadTableData();
+                                    }, 500);
+                                });
+                                showSuccessNotification("Товар '" + data.productName + "' успешно изменен");
+                            },
+                            error: function (xhr) {
+                                console.error("Ошибка при изменении товара:", xhr.responseJSON.errorMessage);
+                                alert("Ошибка при изменении товара: " + xhr.responseJSON.errorMessage);
+                            }
+                        });
+
+
+
+
+
+
+
+                    }
+
+                }
+                else
+                {
+                    form.reportValidity();
+                }
+            });
+
+        });
+    }
+
+    // Заполнение полей данными товара
+    function fillFormWithItemData(item) {
+        $('#Name').val(item.name);
+        $('#Description').val(item.description);
+        $('#Price').val(item.price);
+        $('#selectMenuBrand').val(item.brandId);
+        $('#selectMenuCategory').val(item.categoryId);
+    }
+
+    // Настройка изображений
+    function setupImagePreview(images) {
+        var imagePreview = document.getElementById('imagePreview');
+        imagePreview.innerHTML = ''; // Очистка предварительного просмотра
+
+        var imageOrder = [];
+        images.forEach(function (image) {
+            var imgSrc = 'data:image/jpeg;base64,' + image.data;
+
+            var container = document.createElement('div');
+            container.classList.add('image-container');
+            container.setAttribute('data-index', image.order);
+            container.draggable = false;
+
+            var img = document.createElement('img');
+            img.src = imgSrc;
+            img.classList.add('preview-image');
+
+            // var removeBtn = document.createElement('div');
+            // removeBtn.classList.add('remove-btn');
+            // removeBtn.textContent = '❌';
+            // removeBtn.addEventListener('click', function () {
+            //     container.remove();
+            //     updateImageOrder();
+            // });
+
+            container.appendChild(img);
+            //container.appendChild(removeBtn);
+            imagePreview.appendChild(container);
+
+            imageOrder.push(image.order);
+        });
+
+        document.getElementById('imageOrder').value = imageOrder.join(',');
+    }
+
+    // Настройка кнопок и обработчиков событий
+    function setupEventHandlers() {
+        const inputElement = document.getElementById("Images");
+        const previewContainer = document.getElementById("imagePreview");
+        const imageOrderInput = document.getElementById("imageOrder");
+
+        inputElement.addEventListener("change", handleFiles);
+
+        function handleFiles(event)
+        {
+            const files = event.target.files;
+            previewContainer.innerHTML = "";  // Clear previous previews
+
+            Array.from(files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const div = document.createElement("div");
+                    div.className = "image-container";
+                    div.dataset.index = index;
+
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.className = "preview-image";
+
+                    const removeBtn = document.createElement('div');
+                    removeBtn.textContent = "Удалить";
+                    removeBtn.className = "remove-btn";
+                    removeBtn.innerHTML = '❌';
+                    removeBtn.addEventListener("click", () => removeImage(index));
+
+                    div.appendChild(img);
+                    div.appendChild(removeBtn);
+                    previewContainer.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            updateImageOrder();
+        }
+
+        function removeImage(index) {
+            const dataTransfer = new DataTransfer();
+            const files = inputElement.files;
+            Array.from(files).forEach((file, i) => {
+                if (i !== index) {
+                    dataTransfer.items.add(file);
+                }
+            });
+            inputElement.files = dataTransfer.files;
+
+            const imageContainers = previewContainer.querySelectorAll('.image-container');
+            imageContainers.forEach(container => {
+                const currentIndex = parseInt(container.dataset.index);
+                if (currentIndex === index) {
+                    container.remove();
+                } else if (currentIndex > index) {
+                    container.dataset.index = currentIndex - 1;
+                }
+            });
+
+            updateImageOrder();
+        }
+
+        function updateImageOrder() {
+            const imageContainers = previewContainer.querySelectorAll('.image-container');
+            const order = Array.from(imageContainers).map(container => container.dataset.index);
+            imageOrderInput.value = order.join(',');
+        }
+
+        new Sortable(previewContainer, {
+            animation: 150,
+            onEnd: updateImageOrder
+        });
+
+    }
+
+    function areFormDataEqual(item) {
+        // Получаем значения полей из формы
+        var formName = document.getElementById('Name').value;
+        var formDescription = document.getElementById('Description').value;
+        var formPrice = document.getElementById('Price').value;
+        var formBrandId = document.getElementById('selectMenuBrand').value;
+        var formCategoryId = document.getElementById('selectMenuCategory').value;
+        // Также, если вам нужно проверить изображения, вам нужно получить их значения из формы
+        // В вашем случае, это может потребовать дополнительной работы, так как изображения могут быть загружены через input type="file"
+
+        // Получаем значения из объекта item
+        var itemName = item.name;
+        var itemDescription = item.description;
+        var itemPrice = item.price.toString(); // Преобразуем в строку для сравнения с полем в форме, которое имеет тип "number"
+        var itemBrandId = item.brandId.toString(); // Также преобразуем в строку
+        var itemCategoryId = item.categoryId.toString(); // Преобразуем в строку
+
+        // Получаем значения imagePreview
+        var imageContainers = document.querySelectorAll('.image-preview .image-container');
+        var formImageSrcArray = Array.from(imageContainers).map(function (container) {
+            var imgSrc = container.querySelector('img').getAttribute('src').split(',')[1]; // Берем только часть после запятой
+            return imgSrc;
+        });
+        var formImageOrder = document.getElementById('imageOrder').value;
+
+        // Получаем значения из объекта item.images
+        var itemImages = item.images;
+        var itemImageSrcArray = itemImages.map(function (image) {
+            return image.data;
+        });
+        var itemImageOrder = itemImages.map(function (image) {
+            return image.order.toString();
+        }).join(',');
+
+        // Сравниваем значения
+        if (formName === itemName &&
+            formDescription === itemDescription &&
+            formPrice === itemPrice &&
+            formBrandId === itemBrandId &&
+            formCategoryId === itemCategoryId &&
+            JSON.stringify(formImageSrcArray) === JSON.stringify(itemImageSrcArray) &&
+            formImageOrder === itemImageOrder) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+</script>
