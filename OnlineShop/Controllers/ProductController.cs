@@ -8,16 +8,20 @@ using OnlineShop.Models.Entity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using OnlineShop.Models.Services;
 using OnlineShop.Models.Enums;
+using System.Net;
+using System.Security.Claims;
 
 namespace OnlineShop.Controllers
 {
     public class ProductController : Controller
     {
         private readonly IProductService _productService;
+        private readonly IUserFavoritesService _userFavoritesService;
 
-        public ProductController(IProductService productService)
+        public ProductController(IProductService productService, IUserFavoritesService userFavoritesService)
         {
             _productService = productService;
+            _userFavoritesService = userFavoritesService;
         }
 
         [HttpGet]
@@ -84,21 +88,26 @@ namespace OnlineShop.Controllers
         [Route("products")]
         public async Task<IActionResult> Products()
         {
-            var response = await _productService.GetAllProducts();
-            if (response.IsSuccess)
+            var responseProduct = await _productService.GetAllProducts();
+            var listFavorite = new List<long>();
+            if (User.Identity.IsAuthenticated)
             {
-                return View(response.Data);
+                var listFavoriteIds = await _userFavoritesService.GetFavoriteProductIds(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                if (listFavoriteIds.IsSuccess)
+                {
+                    listFavorite = listFavoriteIds.Data.ToList();
+                }
             }
-            else if (response.ErrorCode == (int)ErrorCodes.ProductNotFound)
+            
+            var model = new ProductsViewModel()
             {
-                return NotFound(new { errorCode = response.ErrorCode, errorMessage = response.ErrorMessage });
-            }
-            else
-            {
-                return StatusCode(500, new { errorCode = response.ErrorCode, errorMessage = response.ErrorMessage });
-            }
-
+                Products = responseProduct.Data,
+                FavoriteIds = listFavorite
+            };
+            
+            return View(model);
         }
+
         [HttpGet]
         [Route("product/{id:long}")]
         public async Task<IActionResult> Product([FromRoute] long id)
@@ -130,6 +139,22 @@ namespace OnlineShop.Controllers
         public IActionResult ProductManagement()
         {
             return PartialView();
+        }
+
+
+        [HttpPost]
+        [Route("product/get-products-by-listid")]
+        public async Task<IActionResult> GetProductsByListId([FromBody] List<long> listId)
+        {
+            var response = await _productService.GetProductsByListId(listId);
+            if (response.IsSuccess)
+            { 
+            return Json(response.Data); 
+            }
+            else
+            {
+                return StatusCode(response.ErrorCode, response.ErrorMessage);
+            }
         }
     }
 

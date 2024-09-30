@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using OnlineShop.Models.DAL.Repositories;
 using OnlineShop.Models.Entity;
+using OnlineShop.Models.Identity;
 using OnlineShop.Models.Interfaces.Repository;
 using OnlineShop.Models.Interfaces.Services;
 using OnlineShop.Models.Services;
@@ -16,8 +18,23 @@ namespace OnlineShop.Models.DAL.DependencyInjection
                 options.UseNpgsql(configuration.GetConnectionString("PostgresSQL"));
             });
 
+            services.AddAuthentication()
+            .AddGoogle(options =>
+            {
+                IConfigurationSection googleAuthNSection = configuration.GetSection("Authentication:Google");
+                options.ClientId = googleAuthNSection["ClientId"];
+                options.ClientSecret = googleAuthNSection["ClientSecret"];
+                options.CallbackPath = "/signin-google";
+            });
+
+            services.AddDefaultIdentity<ApplicationUser>(options =>
+                options.SignIn.RequireConfirmedAccount = false)
+                .AddEntityFrameworkStores<ApplicationDbContext>();
+
             services.InitRepositories();
         }
+
+
 
         private static void InitRepositories(this IServiceCollection services)
         {
@@ -25,14 +42,16 @@ namespace OnlineShop.Models.DAL.DependencyInjection
             services.AddScoped<IBaseRepository<Product>, BaseRepository<Product>>();
             services.AddScoped<IBaseRepository<Brand>, BaseRepository<Brand>>();
             services.AddScoped<IBaseRepository<Category>, BaseRepository<Category>>();
-            
-            
-            
-            
+            services.AddScoped<IBaseRepository<FavoriteProduct>, BaseRepository<FavoriteProduct>>();
+
+
+
+
             //services
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IBrandService, BrandService>();
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IUserFavoritesService, UserFavoritesService>();
         }
     }
 }

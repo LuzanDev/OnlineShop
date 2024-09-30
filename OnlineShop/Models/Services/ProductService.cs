@@ -166,9 +166,9 @@ namespace OnlineShop.Models.Services
         public async Task<BaseResult<Product>> GetProductById(long id)
         {
             var product = await _productRepository.GetAll()
-                .Include (x => x.Images)
+                .Include(x => x.Images)
                 .Include(x => x.Brand)
-                .Include (x => x.Category)
+                .Include(x => x.Category)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             if (product == null)
@@ -188,6 +188,30 @@ namespace OnlineShop.Models.Services
                 };
             }
 
+        }
+
+        public async Task<CollectionResult<Product>> GetProductsByListId(List<long> listId)
+        {
+            if (listId.Count > 0)
+            {
+                var products = await _productRepository.GetAll()
+                .Include(x => x.Images)
+                .Include(x => x.Brand)
+                .Include(x => x.Category)
+                .Where(p => listId.Contains(p.Id))
+                .ToListAsync();
+
+                return new CollectionResult<Product>()
+                {
+                    Data = products
+                };
+            }
+
+            return new CollectionResult<Product>()
+            {
+                ErrorCode = (int)ErrorCodes.ProductNotFound,
+                ErrorMessage = "ProductNotFound",
+            };
         }
     }
 }

@@ -1,13 +1,20 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - OnlineShop</title>
+    <object type="image/svg+xml" data="img/icons.svg" style="display:none;"></object>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/OnlineShop.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+
+
 
 
     @* <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-dJ7V6vk8wIyA1xMT2TBn8fYcJ2/euN0+4sMQfIKu2A67RFWYfnAmP07n50zdz+j38cN73Z2MWVq1JzoJOy4lfA==" crossorigin="anonymous" referrerpolicy="no-referrer" /> *@
@@ -29,6 +36,45 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Auth -->
+    <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content rounded-4 shadow">
+                <div class="modal-header p-5 pb-4 border-bottom-0">
+                    <h1 class="fw-bold mb-0 fs-3">Войдите или создайте аккаунт</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-5 pt-0">
+                    <!-- Вкладки (Табы) -->
+                    <ul class="nav nav-tabs" id="authTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link nav-link-login-input active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="true">Войти</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link nav-link-login-input" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button" role="tab" aria-controls="register" aria-selected="false">Создать аккаунт</button>
+                        </li>
+                    </ul>
+
+                    <!-- Содержимое вкладок -->
+                    <div class="tab-content" id="authTabContent">
+                        <!-- Вкладка Войти -->
+                        <div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
+                            @await Html.PartialAsync("_LoginForm", new OnlineShop.Views.ViewModel.LoginViewModel())
+                        </div>
+
+                        <!-- Вкладка Создать аккаунт -->
+                        <div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
+                            @await Html.PartialAsync("_RegisterForm", new OnlineShop.Views.ViewModel.RegisterViewModel())
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <div class="container">
     <header class="header">
         <div class="d-none d-md-block"></div> <!-- Пустой блок для выравнивания кнопок -->
@@ -37,13 +83,45 @@
             <img src="/img/shop-logo.png" alt="Online Shop Logo" class="shop-logo-icon">
         </a>
         <div class="header-buttons d-flex">
-            <button aria-label="Страница входа" title="Войти" class="btn-input">
-                <img src="/img/user.svg" alt="User Logo" class="user-icon">
-            </button>
-            <button aria-label="Товаров в избранном: 0." title="Избранное" class="btn-favorite">
-                <img src="/img/favorite_border.svg" alt="Favorite Logo" class="favorite-icon">
+                @if (User.Identity.IsAuthenticated)
+                {
+                    // Если пользователь авторизован, отображаем кнопку с выпадающим списком
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn-input" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="/img/user.svg" alt="User Logo" class="user-icon">
+                        </button>
+                        <span class="user-name mt-1">
+                            @{
+                                var userName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? string.Empty;
+                            } 
+                            @userName
+                            </span>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Заказы и возвраты</a></li>
+                            <li><a class="dropdown-item" href="#">Личный кабинет</a></li>
+                            <li>
+                                <button type="button" id="btn-user-exit" class="rounded fw-bold btn btn-dark">
+                                Выход
+                                    <svg width="20" height="20" style="margin-left: auto;" fill="currentColor">
+                                        <use xlink:href="img/icons.svg#icon-exit-user"></use>
+                                    </svg>
+                                </button>
+                                </li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    // Если пользователь не авторизован, отображаем кнопку входа
+                    <button aria-label="Страница входа" title="Войти" class="btn-input" data-bs-toggle="modal" data-bs-target="#authModal">
+                        <img src="/img/user.svg" alt="User Logo" class="user-icon">
+                    </button>
+                }
+                <a aria-label="Товаров в избранном: 0." title="Избранное" class="btn-favorite"
+                   asp-controller="Favorites" asp-action="Favorites">
+                    <img src="/img/favorite_border.svg" alt="Favorite Logo" class="favorite-icon">
                     <span class="badge rounded-pill bg-secondary" id="favorites-count">0</span>
-            </button>
+                </a>
             <button aria-label="Товаров в корзине: 0." title="Корзина" class="btn-cart">
                 <img src="/img/cart.svg" alt="Cart Logo" class="cart-icon">
             </button>
@@ -116,6 +194,20 @@
         background-color: rgb(0 0 0 / 75%) !important;
     }
 
+    #btn-user-exit{
+        color: #fff;
+        background-color: #212529;
+        border-color: #212529;
+    }
+
+        #btn-user-exit:hover {
+        color: #fff;
+        background-color: #727272;
+        border-color: #1a1e21;
+    }
+        
+
+
 
 </style>
 
@@ -123,7 +215,70 @@
 <script>
     $(document).ready(function () {
         loadListCategory();
+
+        
+        
+        $('#btn-user-exit').click(function () {
+            $.ajax({
+                url: '/Account/Logout',
+                type: 'POST',
+                success: function (response) {
+                    if (response.success) 
+                    {
+                        window.location.reload();
+                        console.log('Пользователь успешно вышел');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log('Произошла ошибка пры попытке выхода');
+                    var errorMessage = xhr.responseJSON.errorMessage;
+                    window.location.href = '/Account/Error?errorMessage=' + encodeURIComponent(errorMessage);
+                }
+            });
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+        // Обработчик открытия модального окна
+        const authModal = document.getElementById('authModal');
+        authModal.addEventListener('shown.bs.modal', function () {
+
+            // Сбрасываем активную вкладку на "Войти"
+            const loginTab = document.getElementById('login-tab');
+            if (loginTab) {
+
+                loginTab.click(); // Возвращаемся к вкладке "Войти"
+            }
+
+            // Очищаем все формы внутри модального окна
+            const forms = authModal.querySelectorAll('form');
+            if (forms.length > 0) {
+                forms.forEach(form => {
+                    form.reset();
+                });
+            }
+
+            // Очищаем сообщения об ошибках
+            const errorMessages = authModal.querySelectorAll('.text-danger');
+            errorMessages.forEach(msg => {
+                msg.textContent = ''; // Удаляем текст сообщения
+                msg.classList.remove('field-validation-error'); // Удаляем класс ошибки, если он есть
+            });
+        });
     });
+
+
+    
+
 
     function loadListCategory() {
         $.ajax({
@@ -213,18 +368,14 @@
     });
 
     // Обновление счетчика избранного при загрузке страницы
-    document.addEventListener("DOMContentLoaded", function () {
-        function updateFavoriteCount() {
-            const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-            document.getElementById('favorites-count').textContent = favorites.length;
-        }
+    document.addEventListener("DOMContentLoaded", async function () {
+        await updateFavoriteCount();
 
-        // Сразу обновляем счетчик при загрузке страницы
-        updateFavoriteCount();
+        
+    });
 
         // Обновляем счетчик при изменении избранного (на других страницах через событие)
         document.addEventListener('favoritesUpdated', function () {
             updateFavoriteCount();
         });
-    });
 </script>

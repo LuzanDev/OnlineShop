@@ -1,8 +1,5 @@
 ﻿@using OnlineShop.Models.Entity
 @model Product
-<div class="preload-images">
-    <img src="/img/favorite_fill.svg" alt="Preload">
-</div>
 <div class="container">
     <div class="row mt-4">
         <div class="col-8">
@@ -24,11 +21,13 @@
                     </button>
                 </div>
                 <div class="col-md-4">
-                    <button type="button" class="btn btn-light btn-outline-dark w-100 btn-favorite">
+                    <button id="product-favorite-btn" type="button" class="btn btn-light btn-outline-dark w-100 btn-favorite" data-product-id="@Model.Id">
                         <span class="favorite-text">Избранное</span>
                         <img src="/img/favorite_border.svg" alt="Favorite" class="btn-icon">
-                        </button>
+                    </button>
+
                 </div>
+
             </div>
         </div>
     </div>
@@ -119,14 +118,246 @@
 
 </>
 
-<style>
-    
-    /* Фиксация контейнера информации о товаре */
-    .fixed-col {
-        position: sticky;
-        top: 0;
-        height: 100vh; /* Выберите высоту в зависимости от вашего контента */
-        overflow-y: auto; /* Разрешить вертикальную прокрутку */
-    }
 
-</style>
+
+
+
+
+
+
+
+
+
+
+
+        <style>
+            /* Фиксация контейнера информации о товаре */
+            .fixed-col {
+                position: sticky;
+                top: 0;
+                height: 100vh; /* Выберите высоту в зависимости от вашего контента */
+                overflow-y: auto; /* Разрешить вертикальную прокрутку */
+            }
+
+            /* Отображение изображений */
+            .image-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px; /* Настройте расстояние по вашему усмотрению */
+            }
+
+            .product-image {
+                flex: 1 1 48%; /* Настройте это значение, чтобы обеспечить два изображения в строке */
+                max-width: 47%; /* Настройте это значение, чтобы обеспечить два изображения в строке */
+                box-sizing: border-box; /* Включение отступов и границ в ширину */
+                transition: all 0.5s ease-in-out; /* Плавный переход размеров */
+            }
+
+            /* Форма информации о товаре */
+            #product-text-form {
+                font-size: 16px;
+            }
+
+                #product-text-form .btn {
+                    font-weight: bold;
+                }
+
+            /* Заголовок товара */
+            .view-name-product {
+                background-color: transparent;
+                cursor: pointer;
+                transition-property: color, text-decoration;
+                transition-duration: 150ms;
+                color: #222;
+                line-height: 1.27;
+                font-weight: bold;
+                width: fit-content;
+                margin-bottom: 0.5rem;
+            }
+
+                .view-name-product:hover {
+                    text-decoration: underline;
+                }
+
+            /* Цена товара */
+            .view-price-product {
+                font-size: 24px;
+            }
+
+            /* Кнопка "Добавить в корзину" */
+            .btn-buy-product:hover {
+                background-color: #727272;
+                /*border: 0.1rem solid hsla(0,0%,100%,0);*/
+                color: #fff;
+            }
+
+            
+
+
+            /* Кнопка "Избранное" */
+            .btn-favorite {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 4px; /*Отступ между иконкой и текстом*/
+            }
+                /* Переопределяем стили hover */
+                .btn-favorite:hover {
+                    background-color: initial; /*Убираем фоновый цвет при наведении */
+                    border-color: initial; /*Убираем цвет границы при наведении*/
+                    color: initial; /*Убираем цвет текста при наведении*/
+                }
+
+
+            /* Когда товар не в избранном, при наведении иконка становится заполненной */
+            #product-favorite-btn:hover:not(.active) .btn-icon {
+                content: url('/img/favorite_fill.svg');
+            }
+
+            /* Когда товар в избранном, при наведении иконка становится пустой */
+            #product-favorite-btn.active:hover .btn-icon {
+                content: url('/img/favorite_border.svg');
+            }
+
+
+            .btn-outline-dark.active,
+            .btn-outline-dark:active {
+                color: initial; /* Оставляем исходный цвет текста */
+                background-color: initial; /* Оставляем исходный цвет фона */
+                border-color: initial; /* Оставляем исходный цвет границы */
+            }
+
+            #product-favorite-btn:focus,
+            #product-favorite-btn.active:focus,
+            #product-favorite-btn:active,
+            #product-favorite-btn.active {
+                outline: none; /* Убираем внешнюю обводку (outline) */
+                box-shadow: none; /* Убираем тень при фокусе */
+                border: 1px solid #212529; /* Сохраняем границу кнопки (если ее цвет нужно настроить) */
+            }
+
+
+
+
+
+
+
+            /* Стили и настройка аккардиона */
+            .delivery-and-return-accordion {
+                color: #222;
+                height: 3.5rem;
+                text-transform: uppercase;
+            }
+
+                .delivery-and-return-accordion:not(.collapsed) {
+                    color: #222;
+                    background: none;
+                    box-shadow: none;
+                }
+
+                .delivery-and-return-accordion:focus {
+                    box-shadow: none;
+                }
+
+            .accordion-button:not(.collapsed)::after {
+                fill: #222;
+                transition: transform 0.4s ease-in-out;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23212529' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+            }
+
+            .accordion-button::after {
+                transition: transform 0.4s ease-in-out;
+            }
+
+            .ul-main-acc-body {
+                padding: 15px;
+            }
+
+            .info-delivery {
+                padding-right: 0;
+                padding-left: 0;
+            }
+
+            .np-icon {
+                width: 20px;
+                height: 20px;
+            }
+
+            /* Преимущества OnlineShop */
+            .advantages-header-text {
+                font-size: 20px;
+            }
+            /* Свяжитесь с нами */
+            .mini-icon-call-back {
+                margin-top: 20px;
+                margin-bottom: 20px;
+            }
+
+            .call-back-information {
+                padding-left: 15px;
+                border: 0.1rem solid #e6e6e6;
+                background-color: #fff;
+            }
+
+        </style>
+       <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const favoriteButton = document.querySelector('#product-favorite-btn'); // Используем id, чтобы избежать конфликта
+                if (!favoriteButton) {
+                    console.error('Favorite button for product not found!');
+                    return;
+                }
+
+                const productId = favoriteButton.dataset.productId;
+                const icon = favoriteButton.querySelector('.btn-icon');
+
+                if (!icon) {
+                    console.error('Favorite icon for product not found!');
+                    return;
+                }
+
+                // Получаем избранные товары из localStorage
+                let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+                // Проверяем, есть ли товар в избранном
+                if (favorites.includes(productId)) {
+                    icon.src = '/img/favorite_fill.svg';
+                    favoriteButton.classList.add('active');
+                } else {
+                    icon.src = '/img/favorite_border.svg';
+                    favoriteButton.classList.remove('active');
+                }
+
+                // Обработка клика по кнопке избранного
+                favoriteButton.addEventListener('click', function () {
+                    let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+                    if (favorites.includes(productId)) {
+                        // Удаляем товар из избранного
+                        favorites = favorites.filter(id => id !== productId);
+                        icon.src = '/img/favorite_border.svg';
+                        favoriteButton.classList.remove('active');
+                    } else {
+                        // Добавляем товар в избранное
+                        favorites.push(productId);
+                        icon.src = '/img/favorite_fill.svg';
+                        favoriteButton.classList.add('active');
+                    }
+
+                    // Сохраняем обновленное избранное в localStorage
+                    localStorage.setItem('favorites', JSON.stringify(favorites));
+
+                    // Обновляем счетчик избранного на других страницах
+                    const event = new Event('favoritesUpdated');
+                    document.dispatchEvent(event);
+                });
+            });
+
+
+
+
+
+       </script>
+
+
+        

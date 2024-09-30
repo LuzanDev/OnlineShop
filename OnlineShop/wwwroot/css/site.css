@@ -64,7 +64,14 @@ table img {
     background-color: #f5f5f5;
     color: #727272;
 }
+.btn-favorite{
+    text-decoration:none;
 
+}
+    .btn-favorite:hover {
+        background-color: #f5f5f5;
+        color: #727272;
+    }
 /* Стилизация списка категорий и стрелок */
 .nav-container {
     display: flex;
@@ -120,145 +127,25 @@ table img {
 
 
 
-
-
-
-
-
-
-
-
-
-/* Отображение товара __________________________________________________________________________________________*/
-
-/* Отображение изображений */
-.image-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px; /* Настройте расстояние по вашему усмотрению */
-}
-.product-image {
-    flex: 1 1 48%; /* Настройте это значение, чтобы обеспечить два изображения в строке */
-    max-width: 47%; /* Настройте это значение, чтобы обеспечить два изображения в строке */
-    box-sizing: border-box; /* Включение отступов и границ в ширину */
-    transition: all 0.5s ease-in-out; /* Плавный переход размеров */
-}
-
-/* Форма информации о товаре */
-#product-text-form {
-    
-    font-size: 16px;
-}
-    #product-text-form .btn {
-        font-weight: bold;
-    }
-
-/* Заголовок товара */
-.view-name-product {
-    background-color: transparent;
-    cursor: pointer;
-    transition-property: color, text-decoration;
-    transition-duration: 150ms;
-    color: #222;
-    line-height: 1.27;
-    font-weight: bold;
-    width: fit-content;
-    margin-bottom: 0.5rem;
-}
-    .view-name-product:hover {
-        text-decoration: underline;
-    }
-
-/* Цена товара */
-.view-price-product {
-    font-size: 24px;
-}
-
-/* Кнопка "Добавить в корзину" */
-.btn-buy-product:hover {
+/* Вход - регистрация  */
+.btn-input:hover,
+.btn-register:hover {
     background-color: #727272;
-    /*border: 0.1rem solid hsla(0,0%,100%,0);*/
     color: #fff;
 }
 
-/* Кнопка "Избранное" */
-.btn-favorite {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px; /* Отступ между иконкой и текстом */
-    
+
+.btn-reset-pass{
+    color:#222222 !important;
 }
-    /* Переопределяем стили hover  */
-    .btn-favorite:hover {
-        background-color: initial; /* Убираем фоновый цвет при наведении */
-        border-color: initial; /* Убираем цвет границы при наведении */
-        color: initial; /* Убираем цвет текста при наведении */
+
+    .btn-reset-pass:hover {
+        color: #727272 !important;
     }
-    .btn-favorite:hover .btn-icon {
-        content: url("/img/favorite_fill.svg");
-    }
-/* Предварительная загрузка изображений */
-.preload-images {
-    display: none;
-}
 
-/* Стили и настройка аккардиона */
-.delivery-and-return-accordion {
-    color: #222;
-    height: 3.5rem;
-    text-transform:uppercase;
+.nav-link-login-input{
+    color:black;
 }
-    .delivery-and-return-accordion:not(.collapsed) {
-        color: #222;
-        background: none;
-        box-shadow: none;
-    }
-    .delivery-and-return-accordion:focus {
-        box-shadow: none;
-    }
-.accordion-button:not(.collapsed)::after {
-    fill: #222;
-    transition: transform 0.4s ease-in-out;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23212529' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
-}
-.accordion-button::after {
-    transition: transform 0.4s ease-in-out;
-}
-.ul-main-acc-body{
-    padding:15px;
-}
-.info-delivery{
-    padding-right:0;
-    padding-left:0;
-}
-.np-icon {
-    width: 20px;
-    height: 20px;
-}
-
-/* Преимущества OnlineShop */
-.advantages-header-text{
-    font-size:20px;
-}
-/* Свяжитесь с нами */
-.mini-icon-call-back{
-    margin-top:20px;
-    margin-bottom:20px;
-}
-.call-back-information {
-    padding-left:15px;
-    border: 0.1rem solid #e6e6e6;
-    background-color: #fff;
-}
-
-
-
-
-
-
-
-
 /* Настройки размера шрифта для разных экранов */
 @media (max-width: 1399px) {
     .favorite-text {

@@ -1,0 +1,71 @@
+﻿<div class="container">
+    <h2 class="mb-5">Избранные товары</h2>
+    <div id="favorites-container" class="row">
+        <!-- Здесь будут отрисованы карточки товаров -->
+    </div>
+</div>
+
+
+<style>
+    .current-product-image {
+        transition: opacity 0.3s ease;
+    }
+
+        .current-product-image.hovered {
+            opacity: 0.8; /* Параметр для изменения внешнего вида при наведении */
+        }
+
+
+    .remove-button {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px; /* Круглая кнопка */
+        border: 2px solid transparent; /* Начальная граница прозрачная */
+        transition: border-color 0.3s ease;
+    }
+
+    .remove-icon {
+        width: 24px; /* Размер иконки */
+        height: 24px;
+        transition: opacity 0.3s ease;
+    }
+
+    .remove-button:hover {
+        background-color: #f5f5f5;
+        color: #727272;
+    }
+
+
+
+</style>
+
+
+<script>
+    // Выполняется при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+       GetFavoriteProducts();
+        
+
+    });
+
+    
+
+    
+
+
+
+    
+        
+
+        
+    
+
+       document.addEventListener('NoneFavoriteProduct', function () {
+       document.getElementById('favorites-container').innerHTML = '<p>Ваш список избранного пуст.</p>';
+}); 
+
+</script>

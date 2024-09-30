@@ -1,25 +1,25 @@
-﻿@using OnlineShop.Models.Entity
-@model IEnumerable<Product>
+﻿@model OnlineShop.Views.ViewModel.ProductsViewModel
 
 <div class="row">
-    @foreach (var product in Model)
+    @foreach (var product in Model.Products)
     {
         <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
             <div class="card" data-product-id="@product.Id">
                 @if (product.Images.Any())
                 {
-                    <a href="@Url.Action("Product", "Product", new { id = product.Id })">
-                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(product.Images.First().Data)" 
-                                     data-hover-src="@(product.Images.Count > 1 ? "data:image/jpeg;base64," + Convert.ToBase64String(product.Images[1].Data) : string.Empty)" 
-                             class="card-img-top current-product-image" 
-                             alt="Product Image">
-                    </a>
+                            <a href="@Url.Action("Product", "Product", new { id = product.Id })">
+                                <img src="data:image/jpeg;base64,@Convert.ToBase64String(product.Images.First().Data)" 
+                                             data-hover-src="@(product.Images.Count > 1 ? "data:image/jpeg;base64," + Convert.ToBase64String(product.Images[1].Data) : string.Empty)" 
+                                     class="card-img-top current-product-image" 
+                                     alt="Product Image">
+                            </a>
                 }
-                <button class="favorite-button">
-                    <img src="/img/favorite_border.svg" alt="Favorite" class="favorite-icon">
+                <button class="favorite-button @(Model.FavoriteIds.Contains(product.Id) ? "active" : "")">
+                            <img src="/img/@(Model.FavoriteIds.Contains(product.Id) ? "favorite_fill" : "favorite_border").svg" alt="Favorite" class="favorite-icon">
                 </button>
+                
                 <div class="card-body">
-                    <h4 class="card-title">@product.Brand.Name</h4>
+                    <h4 class="card-title">@product.Name</h4>
                     <p class="card-text">@product.Description</p>
                     <p class="card-text">@product.Price.ToString("C0", new System.Globalization.CultureInfo("uk-UA"))</p>
                 </div>
@@ -27,6 +27,7 @@
         </div>
     }
 </div>
+
 
 <style>
     
@@ -58,26 +59,65 @@
 }
 
 .favorite-button:hover {
-        background-color: #f5f5f5;
-        color: #727272;
+    background-color: #f5f5f5;
+    color: #727272;
 }
 
-.favorite-button:hover .favorite-icon {
-    content: url('/img/favorite_fill.svg'); /* Заполненное сердце при наведении */
-}
+    .favorite-button:hover .favorite-icon {
+        content: url('/img/favorite_fill.svg'); /* Заполненное сердце при наведении */
+    }
 
 .favorite-button.active .favorite-icon {
     content: url('/img/favorite_fill.svg'); /* Заполненное сердце, когда товар в избранном */
 }
+
+    .favorite-button.active:hover .favorite-icon {
+        content: url('/img/favorite_border.svg');
+    }
+
+    .favorite-button .favorite-icon {
+    content: url('/img/favorite_border.svg'); /* Иконка пустого сердца */
+}
+
 
 </style>
 
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        changeImagesOnHover();
+        loadFavoriteIcons();
+        AddHandlerClickFavoriteButton();
+    });
+
+    
+// Состояние избранных товаров для неавторизованного пользователя
+   async function loadFavoriteIcons()
+    {
+        const isAuth = await isAuthenticated();
+        if (!isAuth)
+        {
+            updateFavoriteIcons();
+        }
+    }
+
+
+    // Функция для проверки состояния избранных товаров для неавторизованного пользователя
+        function updateFavoriteIcons() {
+            const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+            document.querySelectorAll('.favorite-button').forEach(button => {
+                const productId = button.closest('.card').dataset.productId;
+
+                // Если товар есть в избранном, показываем заполненное сердце
+                if (favorites.includes(productId)) {
+                    button.classList.add('active');
+                } 
+            });
+        }
         // Функция для обновления изображения при наведении
-        const images = document.querySelectorAll('.current-product-image');
-        images.forEach(img => {
+        function changeImagesOnHover(){
+            const images = document.querySelectorAll('.current-product-image');
+            images.forEach(img => {
             const originalSrc = img.src;
             const hoverSrc = img.getAttribute('data-hover-src');
             if (hoverSrc) {
@@ -89,56 +129,56 @@
                 });
             }
         });
-
-        // Функция для проверки состояния избранных товаров и обновления иконок
-        function updateFavoriteIcons() {
-            const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-            document.querySelectorAll('.favorite-button').forEach(button => {
-                const productId = button.closest('.card').dataset.productId;
-                const icon = button.querySelector('.favorite-icon');
-
-                // Если товар есть в избранном, показываем заполненное сердце
-                if (favorites.includes(productId)) {
-                    icon.src = '/img/favorite_fill.svg';
-                    button.classList.add('active');
-                } else {
-                    icon.src = '/img/favorite_border.svg';
-                    button.classList.remove('active');
-                }
-            });
         }
+// Добавляем обработчики на кнопки избранного для карточек товаров
+async function AddHandlerClickFavoriteButton() {
+    const favoriteButtons = document.querySelectorAll('.favorite-button');
+    favoriteButtons.forEach(button => {
+        button.addEventListener('click', async function () {
+            const productId = this.closest('.card').dataset.productId; // Получаем ID товара
+            let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
 
-        // Обновляем иконки при загрузке страницы
-        updateFavoriteIcons();
+            // Проверка авторизации
+            const isAuth = await isAuthenticated();
 
-        // Добавляем обработчики на кнопки избранного для карточек товаров
-        const favoriteButtons = document.querySelectorAll('.favorite-button');
-        favoriteButtons.forEach(button => {
-            button.addEventListener('click', function () {
-                const productId = this.closest('.card').dataset.productId; // Получаем ID товара
-                let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-
+            if (isAuth) {
+                // Если пользователь авторизован, отправляем запрос на сервер
+                if (this.classList.contains('active')) {
+                    await removeFromFavorites(productId);
+                    this.classList.remove('active');
+                } else {
+                    await addToFavorites(productId);
+                    this.classList.add('active');
+                }
+            } else {
+                // Если пользователь не авторизован, работаем с localStorage
                 if (favorites.includes(productId)) {
                     // Удаление товара из избранного
                     favorites = favorites.filter(id => id !== productId);
-                    this.querySelector('.favorite-icon').src = '/img/favorite_border.svg';
                     this.classList.remove('active');
                 } else {
                     // Добавление товара в избранное
                     favorites.push(productId);
-                    this.querySelector('.favorite-icon').src = '/img/favorite_fill.svg';
                     this.classList.add('active');
                 }
-
-                // Обновляем localStorage
                 localStorage.setItem('favorites', JSON.stringify(favorites));
-
-                // Обновляем счетчик избранного (этот код теперь есть в _Layout.cshtml)
-                const event = new Event('favoritesUpdated');
-                document.dispatchEvent(event); // Сообщаем всем страницам об обновлении избранного
-            });
+                updateFavoriteCount();
+            }
         });
     });
+}
+
+
+
+
+
+
+
+
+
+
+
+
 </script>
 
 

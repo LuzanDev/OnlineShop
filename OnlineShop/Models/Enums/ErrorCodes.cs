@@ -16,5 +16,15 @@
         CategoryNotFound = 31,
         CategoryCollectionNotFound = 32,
         CategoryAlreadyExists = 33,
+
+
+        //UserProductFavorites
+        ProductAlreadyExistsFavorites = 41,
+        NoFavoritesFound = 42,
+
+
+
+        //DataBaseError
+        DatabaseError = 701
     }
 }
