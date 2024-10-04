@@ -38,7 +38,46 @@ namespace OnlineShop.Controllers
                 return StatusCode(response.ErrorCode, response.ErrorMessage);
             }
         }
-        
+
+        [HttpPost]
+        public async Task<IActionResult> SyncFavorites([FromBody] List<int> favoriteProductIds)
+        {
+            if (favoriteProductIds == null || !favoriteProductIds.Any())
+            {
+                return Json(new { success = true });
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
+            var responseFavorites = await _userFavoritesService.GetFavoriteProductIds(userId);
+
+            if (responseFavorites.IsSuccess)
+            {
+                // Cписок id продуктов, которые уже в избранном
+                var existingFavorites = responseFavorites.Data.ToList();
+
+                foreach (var idProduct in favoriteProductIds)
+                {
+                    if (!existingFavorites.Contains(idProduct))
+                    {
+                        var addResult = await _userFavoritesService.AddProductToFavorites(idProduct, userId);
+
+                        if (!addResult.IsSuccess)
+                        {
+                            return StatusCode(500, new { success = false, errorMessage = addResult.ErrorMessage });
+                        }
+                    }
+                }
+                
+                return Json(new { success = true });
+            }
+            else
+            {
+                return StatusCode(500, new { success = false, errorMessage = responseFavorites.ErrorMessage });
+            }
+        }
+
+
+
 
         [HttpGet]
         public async Task<ActionResult> GetFavoriteCount()

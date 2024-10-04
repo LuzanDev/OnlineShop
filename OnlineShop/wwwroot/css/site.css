@@ -127,7 +127,9 @@ table img {
 
 
 
-/* Вход - регистрация  */
+/* Стиль чорной кнопки при наведении  */
+.btn-continue-shopping:hover,
+.btn-recover-pass:hover,
 .btn-input:hover,
 .btn-register:hover {
     background-color: #727272;

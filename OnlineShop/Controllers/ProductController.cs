@@ -112,19 +112,25 @@ namespace OnlineShop.Controllers
         [Route("product/{id:long}")]
         public async Task<IActionResult> Product([FromRoute] long id)
         {
-            var response = await _productService.GetProductById(id);
-            if (response.IsSuccess)
+            var product = await _productService.GetProductById(id);
+            var listFavorite = new List<long>();
+            var isFavorite = false;
+            if (User.Identity.IsAuthenticated)
             {
-                return View(response.Data);
+                var listFavoriteIds = await _userFavoritesService.GetFavoriteProductIds(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                if (listFavoriteIds.IsSuccess)
+                {
+                    listFavorite = listFavoriteIds.Data.ToList();
+                    isFavorite = listFavorite.Contains(id);
+                }
             }
-            else if (response.ErrorCode == (int)ErrorCodes.ProductNotFound)
+            var model = new ProductPageViewModel()
             {
-                return NotFound(new { errorCode = response.ErrorCode, errorMessage = response.ErrorMessage });
-            }
-            else
-            {
-                return StatusCode(500, new { errorCode = response.ErrorCode, errorMessage = response.ErrorMessage });
-            }
+                Product = product.Data,
+                isFavorite = isFavorite,
+            };
+
+            return View(model);
         }
 
         [HttpGet]

@@ -1,19 +1,18 @@
-﻿@using OnlineShop.Models.Entity
-@model Product
+﻿@model OnlineShop.Views.ViewModel.ProductPageViewModel
 <div class="container">
     <div class="row mt-4">
         <div class="col-8">
             <div class="image-container">
-                @foreach (var image in Model.Images)
+                @foreach (var image in Model.Product.Images)
                 {
-                    <img src="@image.GetImageUrl()" alt="@Model.Name" class="product-image" />
+                    <img src="@image.GetImageUrl()" alt="@Model.Product.Name" class="product-image" />
                 }
             </div>
         </div>
         <div id="product-text-form" class="col-4 fixed-col">
-            <h3 class="view-name-product">@Model.Brand.Name</h3>
-            <p class="view-description-product mb-5">@Model.Description</p>
-            <p class="view-price-product">@Model.Price.ToString("C0", new System.Globalization.CultureInfo("uk-UA"))</p>
+            <h3 class="view-name-product">@Model.Product.Brand.Name</h3>
+            <p class="view-description-product mb-5">@Model.Product.Description</p>
+            <p class="view-price-product">@Model.Product.Price.ToString("C0", new System.Globalization.CultureInfo("uk-UA"))</p>
             <div class="row">
                 <div class="col-md-8 ">
                     <button type="button" class="btn btn-dark w-100 btn-buy-product">
@@ -21,9 +20,11 @@
                     </button>
                 </div>
                 <div class="col-md-4">
-                    <button id="product-favorite-btn" type="button" class="btn btn-light btn-outline-dark w-100 btn-favorite" data-product-id="@Model.Id">
+                    <button id="product-favorite-btn" type="button" 
+                    class="btn btn-light btn-outline-dark w-100 btn-favorite @(Model.isFavorite ? "active" : "")"
+                            data-product-id="@Model.Product.Id">
                         <span class="favorite-text">Избранное</span>
-                        <img src="/img/favorite_border.svg" alt="Favorite" class="btn-icon">
+                        <img src="/img/@(Model.isFavorite ? "favorite_fill" : "favorite_border").svg" alt="Favorite" class="btn-icon">
                     </button>
 
                 </div>
@@ -214,6 +215,17 @@
                 content: url('/img/favorite_fill.svg');
             }
 
+            /* not active */
+            #product-favorite-btn .btn-icon {
+                content: url('/img/favorite_border.svg');
+            }
+
+            /* active */
+            #product-favorite-btn.active .btn-icon {
+                content: url('/img/favorite_fill.svg'); 
+            }
+
+
             /* Когда товар в избранном, при наведении иконка становится пустой */
             #product-favorite-btn.active:hover .btn-icon {
                 content: url('/img/favorite_border.svg');
@@ -302,59 +314,65 @@
         </style>
        <script>
             document.addEventListener('DOMContentLoaded', function () {
-                const favoriteButton = document.querySelector('#product-favorite-btn'); // Используем id, чтобы избежать конфликта
-                if (!favoriteButton) {
-                    console.error('Favorite button for product not found!');
-                    return;
-                }
-
-                const productId = favoriteButton.dataset.productId;
-                const icon = favoriteButton.querySelector('.btn-icon');
-
-                if (!icon) {
-                    console.error('Favorite icon for product not found!');
-                    return;
-                }
-
-                // Получаем избранные товары из localStorage
-                let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-
-                // Проверяем, есть ли товар в избранном
-                if (favorites.includes(productId)) {
-                    icon.src = '/img/favorite_fill.svg';
-                    favoriteButton.classList.add('active');
-                } else {
-                    icon.src = '/img/favorite_border.svg';
-                    favoriteButton.classList.remove('active');
-                }
-
-                // Обработка клика по кнопке избранного
-                favoriteButton.addEventListener('click', function () {
-                    let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-
-                    if (favorites.includes(productId)) {
-                        // Удаляем товар из избранного
-                        favorites = favorites.filter(id => id !== productId);
-                        icon.src = '/img/favorite_border.svg';
-                        favoriteButton.classList.remove('active');
-                    } else {
-                        // Добавляем товар в избранное
-                        favorites.push(productId);
-                        icon.src = '/img/favorite_fill.svg';
-                        favoriteButton.classList.add('active');
-                    }
-
-                    // Сохраняем обновленное избранное в localStorage
-                    localStorage.setItem('favorites', JSON.stringify(favorites));
-
-                    // Обновляем счетчик избранного на других страницах
-                    const event = new Event('favoritesUpdated');
-                    document.dispatchEvent(event);
-                });
+                loadFavoriteIcon();
+                AddHandlerClickFavoriteButton();
             });
 
 
+    // Состояние избранного товара для неавторизованного пользователя
+   async function loadFavoriteIcon()
+    {
+        const isAuth = await isAuthenticated();
+        if (!isAuth)
+        {
+            updateFavoriteIcon();
+        }
+    }
+    // Функция для проверки состояния избранного товара для неавторизованного пользователя
+        function updateFavoriteIcon() {
+            const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+            const favoriteButton = document.querySelector('#product-favorite-btn');
+            const productId = favoriteButton.dataset.productId;
+            if (favorites.includes(productId)) {
+                    favoriteButton.classList.add('active');
+                } 
+        }
+    // Добавляем обработчик для кнопки избранное
+    async function AddHandlerClickFavoriteButton() 
+    {
+        const favoriteButton = document.querySelector('#product-favorite-btn');
+        favoriteButton.addEventListener('click', async function () {
+        const productId = favoriteButton.dataset.productId;
+        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
 
+            // Проверка авторизации
+            const isAuth = await isAuthenticated();
+            if (isAuth) {
+                // Если пользователь авторизован, отправляем запрос на сервер
+                if (favoriteButton.classList.contains('active')) {
+                    await removeFromFavorites(productId);
+                    favoriteButton.classList.remove('active');
+                } else {
+                    await addToFavorites(productId);
+                    favoriteButton.classList.add('active');
+                }
+            } else {
+                // Если пользователь не авторизован, работаем с localStorage
+                if (favorites.includes(productId)) {
+                    // Удаление товара из избранного
+                    favorites = favorites.filter(id => id !== productId);
+                    favoriteButton.classList.remove('active');
+                } else {
+                    // Добавление товара в избранное
+                    favorites.push(productId);
+                    favoriteButton.classList.add('active');
+                }
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                updateFavoriteCount();
+            }
+});
+
+    }
 
 
        </script>

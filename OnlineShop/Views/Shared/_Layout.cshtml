@@ -42,7 +42,7 @@
         <div class="modal-dialog">
             <div class="modal-content rounded-4 shadow">
                 <div class="modal-header p-5 pb-4 border-bottom-0">
-                    <h1 class="fw-bold mb-0 fs-3">Войдите или создайте аккаунт</h1>
+                    <h1 class="fw-bold mb-0 fs-3 modal-header-name">Войдите или создайте аккаунт</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
@@ -215,27 +215,10 @@
 <script>
     $(document).ready(function () {
         loadListCategory();
-
+        syncFavorites();
         
         
-        $('#btn-user-exit').click(function () {
-            $.ajax({
-                url: '/Account/Logout',
-                type: 'POST',
-                success: function (response) {
-                    if (response.success) 
-                    {
-                        window.location.reload();
-                        console.log('Пользователь успешно вышел');
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.log('Произошла ошибка пры попытке выхода');
-                    var errorMessage = xhr.responseJSON.errorMessage;
-                    window.location.href = '/Account/Error?errorMessage=' + encodeURIComponent(errorMessage);
-                }
-            });
-        });
+        
 
 
 
@@ -276,8 +259,11 @@
         });
     });
 
+    // Обработчик нажатия кнопки "Выход"
+    $('#btn-user-exit').click(function () {
+    logoutUser();  
+});
 
-    
 
 
     function loadListCategory() {
@@ -369,7 +355,13 @@
 
     // Обновление счетчика избранного при загрузке страницы
     document.addEventListener("DOMContentLoaded", async function () {
+        saveOriginalAuthModal();
         await updateFavoriteCount();
+
+
+        
+
+
 
         
     });
@@ -378,4 +370,10 @@
         document.addEventListener('favoritesUpdated', function () {
             updateFavoriteCount();
         });
+
+
+
+
+
+
 </script>

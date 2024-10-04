@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using OnlineShop.Models.DAL.Repositories;
+using OnlineShop.Models.Email;
 using OnlineShop.Models.Entity;
 using OnlineShop.Models.Identity;
 using OnlineShop.Models.Interfaces.Repository;
@@ -52,6 +54,8 @@ namespace OnlineShop.Models.DAL.DependencyInjection
             services.AddScoped<IBrandService, BrandService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IUserFavoritesService, UserFavoritesService>();
+            services.AddTransient<IEmailSender, SendGridEmailSender>();
+
         }
     }
 }

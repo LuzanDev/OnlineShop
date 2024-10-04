@@ -237,6 +237,81 @@ function removeFavoriteProductFromFavotetiesPage(productId) {
         productCard.parentElement.remove();
     }
 }
+// Синхронизация избранных товаров
+async function syncFavorites() {
+    const isAuth = await isAuthenticated(); // Проверка, авторизован ли пользователь
+    if (isAuth) {
+        const favoriteProducts = JSON.parse(localStorage.getItem('favorites')) || [];
+
+        if (favoriteProducts.length > 0) {
+            try {
+                const response = await fetch('/Favorites/SyncFavorites', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(favoriteProducts),
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    console.log('Favorites synchronized successfully');
+                    // Дополнительные действия, например, очистка localStorage
+                    debugger;
+                    updateFavoriteButtons(favoriteProducts);
+                    updateFavoriteCount();
+                    localStorage.removeItem('favorites');
+                } else {
+                    console.error('Failed to sync favorites:', data.message || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('Error syncing favorites:', error);
+            }
+        }
+    }
+}
+// Функция для обновления кнопок "избранное" после синхронизации
+function updateFavoriteButtons(favoriteProductIds) {
+    document.querySelectorAll('.card').forEach(card => {
+        const productId = card.getAttribute('data-product-id');
+
+        if (favoriteProductIds.includes(productId)) {
+            const favoriteButton = card.querySelector('.favorite-button');
+            favoriteButton.classList.add('active');
+        }
+    });
+
+    const productFavoriteButton = document.querySelector('#product-favorite-btn');
+    if (productFavoriteButton) {
+        const productId = productFavoriteButton.getAttribute('data-product-id');
+
+        if (favoriteProductIds.includes(productId)) {
+            productFavoriteButton.classList.add('active');
+        }
+    }
+}
+// Переменные для сохранения данных модального окна
+var originalModalBody;
+var originalModalHeaderName;
+// Сохранение данных модального окна authModal
+function saveOriginalAuthModal() {
+    var authModal = document.getElementById('authModal');
+
+    originalModalBody = document.querySelector('#authModal .modal-body').innerHTML;
+    originalModalHeaderName = document.querySelector('#authModal .modal-header-name').innerHTML;
+
+    authModal.addEventListener('show.bs.modal', function () {
+        resetModalContent();
+    });
+}
+// Востановление AuthModal в исходные данные
+function resetModalContent() {
+    document.querySelector('#authModal .modal-body').innerHTML = originalModalBody;
+    document.querySelector('#authModal .modal-header-name').innerHTML = originalModalHeaderName;
+
+    var loginTab = new bootstrap.Tab(document.getElementById('login-tab'));
+    loginTab.show();
+}
 
 
 
@@ -249,19 +324,24 @@ function removeFavoriteProductFromFavotetiesPage(productId) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+// Функия выхода пользователя из аккаунта
+function logoutUser() {
+    $.ajax({
+        url: '/Account/Logout',
+        type: 'POST',
+        success: function (response) {
+            if (response.success) {
+                window.location.reload();
+                console.log('Пользователь успешно вышел');
+            }
+        },
+        error: function (xhr, status, error) {
+            console.log('Произошла ошибка при попытке выхода');
+            var errorMessage = xhr.responseJSON.errorMessage;
+            window.location.href = '/Account/Error?errorMessage=' + encodeURIComponent(errorMessage);
+        }
+    });
+}
 function loadTableBrands() {
     $.ajax({
         url: "/Brand/Brands",
