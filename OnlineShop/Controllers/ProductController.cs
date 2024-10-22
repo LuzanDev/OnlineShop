@@ -16,12 +16,14 @@ namespace OnlineShop.Controllers
     public class ProductController : Controller
     {
         private readonly IProductService _productService;
+        private readonly ICartService _cartService;
         private readonly IUserFavoritesService _userFavoritesService;
 
-        public ProductController(IProductService productService, IUserFavoritesService userFavoritesService)
+        public ProductController(IProductService productService, IUserFavoritesService userFavoritesService, ICartService cartService)
         {
             _productService = productService;
             _userFavoritesService = userFavoritesService;
+            _cartService = cartService;
         }
 
         [HttpGet]
@@ -90,6 +92,7 @@ namespace OnlineShop.Controllers
         {
             var responseProduct = await _productService.GetAllProducts();
             var listFavorite = new List<long>();
+           // var test = await _cartService.UpdateCartItemQuantity(User.FindFirstValue(ClaimTypes.NameIdentifier), 2, 10);
             if (User.Identity.IsAuthenticated)
             {
                 var listFavoriteIds = await _userFavoritesService.GetFavoriteProductIds(User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -113,21 +116,33 @@ namespace OnlineShop.Controllers
         public async Task<IActionResult> Product([FromRoute] long id)
         {
             var product = await _productService.GetProductById(id);
+
             var listFavorite = new List<long>();
+            var productIdsInCart = new List<long>();
+
             var isFavorite = false;
+            var inCart = false;
             if (User.Identity.IsAuthenticated)
             {
-                var listFavoriteIds = await _userFavoritesService.GetFavoriteProductIds(User.FindFirstValue(ClaimTypes.NameIdentifier));
-                if (listFavoriteIds.IsSuccess)
+                var responseListFavoriteIds = await _userFavoritesService
+                    .GetFavoriteProductIds(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+                var responseProductListIdsInCart = await _cartService
+                    .GetCartProductIds(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+                if (responseListFavoriteIds.IsSuccess && responseProductListIdsInCart.IsSuccess)
                 {
-                    listFavorite = listFavoriteIds.Data.ToList();
+                    listFavorite = responseListFavoriteIds.Data.ToList();
+                    productIdsInCart = responseProductListIdsInCart.Data.ToList();
                     isFavorite = listFavorite.Contains(id);
+                    inCart = productIdsInCart.Contains(id);
                 }
             }
             var model = new ProductPageViewModel()
             {
                 Product = product.Data,
                 isFavorite = isFavorite,
+                inCart = inCart
             };
 
             return View(model);

@@ -45,9 +45,12 @@
             type: form.attr("method"),
             url: form.attr("action"),
             data: form.serialize(),
-            success: function (response) {
+            success: async function (response) {
                 // Если сервер возвращает успешный результат, перенаправляем пользователя
                 if (response.success) {
+
+                    await syncCartItems();
+                    await syncFavorites();
                     window.location.reload();
                 }
                 else {

@@ -95,6 +95,29 @@ namespace OnlineShop.Controllers
             return PartialView(model);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> ConfirmEmail(string token, string email)
+        {
+            if (token == null || email == null)
+            {
+                return RedirectToAction("Error", new { errorMessage = "Невалидный токен подтверждения" });
+            }
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return RedirectToAction("Error", new { errorMessage = "Пользователь не найден" });
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            if (result.Succeeded)
+            {
+                return PartialView("EmailConfirmed");
+            }
+
+            return RedirectToAction("Error", new { errorMessage = "Не удалось подтвердить электронную почту" });
+        }
+
 
         // Инициация процесса аутентификации через Google
         [HttpPost]
@@ -124,15 +147,19 @@ namespace OnlineShop.Controllers
 
             if (existingUser != null)
             {
-                await _signInManager.SignInAsync(existingUser, isPersistent: false);
-                return RedirectToAction("Products", "Product");
-            }
+                // Если пользователь существует, проверяем подтверждена ли почта
+                if (!existingUser.EmailConfirmed)
+                {
+                    TempData["ErrorMessage"] = "Ваша электронная почта не подтверждена. Мы отправили вам новое письмо для подтверждения.";
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(existingUser);
+                    var confirmationLink = Url.Action("ConfirmEmail", "Account", new { token, email = existingUser.Email }, Request.Scheme);
+                    
+                    await _emailSender.SendEmailAsync(existingUser.Email, "Подтверждение электронной почты", $"Пожалуйста, подтвердите свою почту, перейдя по ссылке: {confirmationLink}");
 
-            //попытка выполнить вход на основе данных, 
-            //предоставленных внешним провайдером.
-            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
-            if (result.Succeeded)
-            {
+                    return RedirectToAction("Error");
+                }
+
+                await _signInManager.SignInAsync(existingUser, isPersistent: false);
                 return RedirectToAction("Products", "Product");
             }
             else
@@ -149,7 +176,8 @@ namespace OnlineShop.Controllers
 
                     //связывает пользователя с внешним провайдером
                     await _userManager.AddLoginAsync(user, info);
-
+                    user.EmailConfirmed = true;
+                    await _userManager.UpdateAsync(user);
                     //вход в систему для только что созданного пользователя
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction("Products", "Product");
@@ -176,9 +204,13 @@ namespace OnlineShop.Controllers
                 if (result.Succeeded)
                 {
                     await _userManager.AddClaimAsync(user, new Claim(ClaimTypes.GivenName, user.Name));
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var confirmationLink = Url.Action("ConfirmEmail", "Account", new { token, email = user.Email }, Request.Scheme);
 
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    return Json(new { success = true });
+                    // Отправляем email через SendGrid
+                    await _emailSender.SendEmailAsync(user.Email, "Подтверждение электронной почты", $"Подтвердите вашу почту, пройдя по ссылке: <a href='{confirmationLink}'>подтвердить</a>");
+
+                    return PartialView("EmailConfirmationSent");
                 }
                 foreach (var error in result.Errors)
                 {
@@ -199,6 +231,11 @@ namespace OnlineShop.Controllers
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user != null)
             {
+                if (!await _userManager.IsEmailConfirmedAsync(user))
+                {
+                    ModelState.AddModelError(string.Empty, "Вы не подтвердили свой адрес электронной почты.");
+                    return PartialView("_LoginForm", model);
+                }
                 var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
 
                 if (result.Succeeded)

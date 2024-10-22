@@ -1,0 +1,40 @@
+﻿<div class="row align-items-center justify-content-between">
+    <div class="col-auto">
+        <h1>КОРЗИНА</h1> 
+    </div>
+    <div class="col-auto">
+        <p class="continue-shopping" style="cursor: pointer;" onclick="window.location.href='@Url.Action("Products", "Product")'">Продолжить покупки</p>
+    </div>
+</div>
+
+<div id="cartContent" class="row mt-4">
+    
+</div>
+
+
+<style>
+    .continue-shopping{
+        margin-top: 13px;
+    }
+
+    .cus-span {
+        margin-right: 10px;
+    }
+
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        GetCart();
+
+
+    });
+
+    
+
+
+
+
+
+
+</script>

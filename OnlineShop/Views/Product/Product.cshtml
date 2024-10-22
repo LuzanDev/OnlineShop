@@ -15,8 +15,9 @@
             <p class="view-price-product">@Model.Product.Price.ToString("C0", new System.Globalization.CultureInfo("uk-UA"))</p>
             <div class="row">
                 <div class="col-md-8 ">
-                    <button type="button" class="btn btn-dark w-100 btn-buy-product">
-                        Добавить в корзину
+                    <button id="product-cart-btn" type="button" class="btn btn-dark w-100 btn-buy-product @(Model.inCart ? "active" : "")"
+                            data-product-id="@Model.Product.Id">
+                        @(Model.inCart ? "Уже в корзине" : "Добавить в корзину")
                     </button>
                 </div>
                 <div class="col-md-4">
@@ -118,18 +119,6 @@
     </div>
 
 </>
-
-
-
-
-
-
-
-
-
-
-
-
 
         <style>
             /* Фиксация контейнера информации о товаре */
@@ -314,19 +303,22 @@
         </style>
        <script>
             document.addEventListener('DOMContentLoaded', function () {
-                loadFavoriteIcon();
+                loadFavoriteAndCartIcon();
                 AddHandlerClickFavoriteButton();
+                AddHandlerClickCartButton();
             });
 
 
     // Состояние избранного товара для неавторизованного пользователя
-   async function loadFavoriteIcon()
+   async function loadFavoriteAndCartIcon()
     {
         const isAuth = await isAuthenticated();
         if (!isAuth)
         {
             updateFavoriteIcon();
+            updateCartButton();
         }
+        
     }
     // Функция для проверки состояния избранного товара для неавторизованного пользователя
         function updateFavoriteIcon() {
@@ -335,6 +327,16 @@
             const productId = favoriteButton.dataset.productId;
             if (favorites.includes(productId)) {
                     favoriteButton.classList.add('active');
+                } 
+        }
+    // Функция для проверки состояния кнопки (нет /в корзине) для неавторизованного пользователя
+        function updateCartButton() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const cartButton = document.querySelector('#product-cart-btn');
+            const productId = cartButton.dataset.productId;
+            if (cart.findIndex(item => item.ProductId === productId) !== -1) {
+                    cartButton.classList.add('active');
+                    cartButton.textContent = "Уже в корзине";
                 } 
         }
     // Добавляем обработчик для кнопки избранное
@@ -373,6 +375,46 @@
 });
 
     }
+
+            // Добавляем обработчик для кнопки корзина
+            async function AddHandlerClickCartButton() {
+                const cartButton = document.querySelector('#product-cart-btn'); 
+                cartButton.addEventListener('click', async function () {
+                    const productId = cartButton.dataset.productId;
+                    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                     
+
+                    // Проверка авторизации
+                    const isAuth = await isAuthenticated();
+                    if (isAuth) {
+                        // Если пользователь авторизован, отправляем запрос на сервер
+                        if (cartButton.classList.contains('active')) {
+                            await removeProductFromCarts(productId); 
+                            cartButton.classList.remove('active');
+                            cartButton.textContent = "Добавить в корзину";
+                        } else {
+                            await addProductToCarts(productId); 
+                            cartButton.classList.add('active');
+                            cartButton.textContent = "Уже в корзине";
+                        }
+                    } else {
+                        // Если пользователь не авторизован, работаем с localStorage
+                        if (cart.findIndex(item => item.ProductId === productId) !== -1) {
+                            // Удаление товара из корзины
+                            cart = cart.filter(item => item.ProductId !== productId);
+                            cartButton.classList.remove('active');
+                            cartButton.textContent = "Добавить в корзину";
+                        } else {
+                            // Добавление товара в корзину
+                            cart.push({ ProductId: productId, Quantity: 1 });
+                            cartButton.classList.add('active');
+                            cartButton.textContent = "Уже в корзине";
+                        }
+                        localStorage.setItem('cart', JSON.stringify(cart));
+                        updateCartCount(false);
+                    }
+                });
+            }
 
 
        </script>

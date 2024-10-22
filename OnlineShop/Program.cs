@@ -6,6 +6,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 // My services
 builder.Services.AddDataAccessLayer(builder.Configuration);
+//builder.WebHost.ConfigureKestrel(options =>
+//{
+//    options.ListenAnyIP(44368, listenOptions =>
+//    {
+//        listenOptions.UseHttps(); // Убедитесь, что используется HTTPS
+//    });
+//});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -1,0 +1,28 @@
+﻿<div class="mt-4">
+    <p>Мы отправили ссылку для подтверждения адреса электронной почты.</p>
+    <p>Для завершения регистрации необходимо подтверждение.</p>
+    <p>Не видите письмо? Проверьте папку «Спам».</p>
+</div>
+
+<button type="button" class="mt-3 btn btn-dark w-100 rounded fw-bold btn-continue-shopping">
+    Продолжить шопинг
+</button>
+
+
+<script>
+    $(document).ready(function () {
+
+        $(document).on('click', '.btn-continue-shopping', function (e) {
+            e.preventDefault();
+
+            var modalElement = document.getElementById('authModal');
+            var modal = bootstrap.Modal.getInstance(modalElement); // Получаем экземпляр модального окна
+            if (modal) {
+                modal.hide();
+            }
+        });
+    });
+
+
+
+</script>

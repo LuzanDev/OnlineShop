@@ -167,21 +167,24 @@ namespace OnlineShop.Models.Services
 
         public async Task<BaseResult<IEnumerable<long>>> GetFavoriteProductIds(string userId)
         {
-            var listFavoriteIds = await _favoritesRepository.GetAll()
+            try
+            {
+                var listFavoriteIds = await _favoritesRepository.GetAll()
                 .Where(id => id.UserId == userId).Select(x => x.ProductId).ToListAsync();
 
-            if (listFavoriteIds.Count > 0)
-            {
                 return new BaseResult<IEnumerable<long>>()
                 {
                     Data = listFavoriteIds
                 };
             }
-            return new BaseResult<IEnumerable<long>>()
+            catch (Exception ex)
             {
-                ErrorCode = (int)ErrorCodes.NoFavoritesFound,
-                ErrorMessage = "Список избранного пуст."
-            };
+                return new BaseResult<IEnumerable<long>>()
+                {
+                    ErrorCode = (int)ErrorCodes.DatabaseError,
+                    ErrorMessage = ex.Message
+                };
+            }
         }
     }
 }

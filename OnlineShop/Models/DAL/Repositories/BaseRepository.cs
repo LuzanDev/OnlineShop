@@ -38,5 +38,10 @@ namespace OnlineShop.Models.DAL.Repositories
             await _context.SaveChangesAsync();
             return entity;
         }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
     }
 }

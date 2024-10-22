@@ -17,7 +17,12 @@
         <span asp-validation-for="Password" class="text-danger"></span>
     </div>
     @Html.ValidationSummary(true, "", new { @class = "text-danger validation-summary-errors" })
-    <button class="mt-2 btn btn-dark w-100 rounded fw-bold btn-register" type="submit">Зарегистрироваться</button>
+    <button class="mt-2 btn btn-dark w-100 rounded fw-bold btn-register" type="submit">
+        <span id="buttonText">Зарегистрироваться</span>
+        <div id="loadingSpinner" class="spinner-border text-light custom-spinner" role="status" style="display: none;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        </button>
 </form>
 <p class="text-center mt-3 mb-3">ИЛИ</p>
 
@@ -33,11 +38,12 @@
 
 
 
-
-
 <script>
     function submitRegisterForm() 
     {
+        $("#buttonText").hide();
+        $("#loadingSpinner").show();
+
         var form = $("#registerForm");
         $.ajax({
             type: form.attr("method"),
@@ -45,22 +51,18 @@
             data: form.serialize(),
             success: function (response) 
             {
-                // Если сервер возвращает успешный результат, перенаправляем пользователя
-                if (response.success) 
-                {
-                    window.location.reload();
-                } 
-                else 
-                {
-                    $("#register").html(response); // Обновляем вкладку регистрации
-                }
+                debugger;
+                    $("#register").html(response); 
             },
             error: function (xhr) {
-                // В случае ошибки сервера, можно отобразить сообщение
                 $("#register").html("<div class='text-danger'>Ошибка сервера. Попробуйте позже.</div>");
+            },
+            complete: function () {
+                $("#buttonText").show();
+                $("#loadingSpinner").hide();
             }
         });
-        return false; // Остановите стандартное поведение формы
+        return false; 
     }
 </script>
 

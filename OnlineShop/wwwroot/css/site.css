@@ -28,6 +28,12 @@ table img {
     max-height: 100%; /* Максимальная высота изображения */
 }
 
+.custom-spinner {
+    width: 1rem;
+    height: 1rem;
+}
+
+
 
 #notification-container {
     display: none;
@@ -64,14 +70,16 @@ table img {
     background-color: #f5f5f5;
     color: #727272;
 }
-.btn-favorite{
-    text-decoration:none;
-
+.btn-favorite,
+.btn-cart {
+    text-decoration: none;
 }
-    .btn-favorite:hover {
+    .btn-favorite:hover,
+    .btn-cart:hover {
         background-color: #f5f5f5;
         color: #727272;
     }
+
 /* Стилизация списка категорий и стрелок */
 .nav-container {
     display: flex;
@@ -137,11 +145,13 @@ table img {
 }
 
 
-.btn-reset-pass{
-    color:#222222 !important;
+.btn-reset-pass,
+.btn-edit-count {
+    color: #222222 !important;
 }
 
-    .btn-reset-pass:hover {
+    .btn-reset-pass:hover,
+    .btn-edit-count:hover {
         color: #727272 !important;
     }
 

@@ -6,5 +6,6 @@ namespace OnlineShop.Views.ViewModel
     {
         public Product Product { get; set; }
         public bool isFavorite { get; set; }
+        public bool inCart { get; set; }
     }
 }

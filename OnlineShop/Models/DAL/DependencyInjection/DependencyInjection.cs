@@ -30,7 +30,7 @@ namespace OnlineShop.Models.DAL.DependencyInjection
             });
 
             services.AddDefaultIdentity<ApplicationUser>(options =>
-                options.SignIn.RequireConfirmedAccount = false)
+                options.SignIn.RequireConfirmedEmail = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.InitRepositories();
@@ -45,11 +45,13 @@ namespace OnlineShop.Models.DAL.DependencyInjection
             services.AddScoped<IBaseRepository<Brand>, BaseRepository<Brand>>();
             services.AddScoped<IBaseRepository<Category>, BaseRepository<Category>>();
             services.AddScoped<IBaseRepository<FavoriteProduct>, BaseRepository<FavoriteProduct>>();
+            services.AddScoped<IBaseRepository<Cart>, BaseRepository<Cart>>();
 
 
 
 
             //services
+            services.AddScoped<ICartService, CartService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IBrandService, BrandService>();
             services.AddScoped<ICategoryService, CategoryService>();

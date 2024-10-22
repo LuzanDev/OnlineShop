@@ -103,7 +103,7 @@
                                 <button type="button" id="btn-user-exit" class="rounded fw-bold btn btn-dark">
                                 Выход
                                     <svg width="20" height="20" style="margin-left: auto;" fill="currentColor">
-                                        <use xlink:href="img/icons.svg#icon-exit-user"></use>
+                                        <use xlink:href="/img/icons.svg#icon-exit-user"></use>
                                     </svg>
                                 </button>
                                 </li>
@@ -122,9 +122,11 @@
                     <img src="/img/favorite_border.svg" alt="Favorite Logo" class="favorite-icon">
                     <span class="badge rounded-pill bg-secondary" id="favorites-count">0</span>
                 </a>
-            <button aria-label="Товаров в корзине: 0." title="Корзина" class="btn-cart">
-                <img src="/img/cart.svg" alt="Cart Logo" class="cart-icon">
-            </button>
+                <a aria-label="Товаров в корзине: 0." title="Корзина" class="btn-cart"
+                   asp-controller="Cart" asp-action="Cart">
+                    <img src="/img/cart.svg" alt="Cart Logo" class="cart-icon">
+                    <span class="badge rounded-pill bg-secondary" id="cart-count">0</span>
+                </a>
         </div>
     </header>
     </div>
@@ -215,7 +217,8 @@
 <script>
     $(document).ready(function () {
         loadListCategory();
-        syncFavorites();
+        
+        
         
         
         
@@ -356,7 +359,9 @@
     // Обновление счетчика избранного при загрузке страницы
     document.addEventListener("DOMContentLoaded", async function () {
         saveOriginalAuthModal();
-        await updateFavoriteCount();
+        const isAuth = await isAuthenticated();
+         updateFavoriteCount(isAuth);
+         updateCartCount(isAuth);
 
 
         
@@ -370,7 +375,6 @@
         document.addEventListener('favoritesUpdated', function () {
             updateFavoriteCount();
         });
-
 
 
 

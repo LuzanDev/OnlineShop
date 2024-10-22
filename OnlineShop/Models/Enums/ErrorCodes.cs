@@ -23,6 +23,13 @@
         NoFavoritesFound = 42,
 
 
+        // Cart
+        CartNotFound = 51,
+        ProductAlreadyInCart = 52,
+        ProductAbsentInCart = 53,
+        CartItemNotFound = 54,
+
+
 
         //DataBaseError
         DatabaseError = 701

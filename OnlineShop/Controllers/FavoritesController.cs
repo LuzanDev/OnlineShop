@@ -47,7 +47,8 @@ namespace OnlineShop.Controllers
                 return Json(new { success = true });
             }
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            // Получить список id товаров которые уже в избранном (из базы данных)
             var responseFavorites = await _userFavoritesService.GetFavoriteProductIds(userId);
 
             if (responseFavorites.IsSuccess)
