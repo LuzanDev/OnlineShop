@@ -8,8 +8,27 @@ async function isAuthenticated() {
             return false;
         });
 }
+// Тест 
 
-// Разработка "Корзина"
+
+
+
+
+//  "Корзина"
+
+//Обработчик кнопки Оформления заказа
+async function handleCheckoutClick() {
+    const auth = await isAuthenticated();
+    if (!auth) {
+        const modal = new bootstrap.Modal(document.getElementById('authModal'));
+        modal.show();
+        return;
+    }
+    //fetch('/Checkout/Checkout', { method: 'GET' });
+    window.location.href = '/checkout';
+}
+
+
 
 // Рендер таблицы если товары есть в корзине
 function renderCartContent(data) {
@@ -38,11 +57,12 @@ function renderCartContent(data) {
                 <div class="card-body">
                     <h5 class="card-title">Сумма заказа</h5>
                     <p id="totalAmount" class="card-text">3000₽</p>
-                    <button class="btn btn-primary">Оплатить</button>
+                    <button id="btnCheckout" class="btn btn-dark btn-pay-order-cart">Оплатить</button>
                 </div>
             </div>
         </div>
     `;
+    document.getElementById('btnCheckout').addEventListener('click', handleCheckoutClick);
     renderCartItems(data.cartItems);
     updateTotal(data.totalAmount);
     }
@@ -52,16 +72,6 @@ function renderCartContent(data) {
     }
     
 }
-
-
-
-
-
-
-
-
-
-
 // Получение общей суммы корзины (Auth)
 function UpdateTotalAmount(){
     fetch('/Cart/GetTotalAmount', {
@@ -85,7 +95,6 @@ function UpdateTotalAmount(){
             console.error('Error:', error);
         });
 }
-
 // Отображение товаров в корзине (Auth/NotAuth)
 async function GetCart() {
     
@@ -146,7 +155,6 @@ async function GetCart() {
     }
     
 }
-
 // Отображение товаров которые находятся в корзине
 function renderCartItems(cartItems) {
     const tbody = document.querySelector('.table tbody');
@@ -273,11 +281,7 @@ async function removeCartItemFromCartPage(productId) {
                 console.error('Error:', error);
             });
     }        
-
-            
-            
 }
-
 // Синхронизация корзины
 async function syncCartItems()
 {
@@ -309,19 +313,7 @@ async function syncCartItems()
             }
         }
         updateCartCount(true);
-    
-    
-    
 }
-
-
-
-
-
-
-
-
-
 // Обновление счетчика кол-ва товаров в корзине
 function updateCartCount(isAuth) {
     //const isAuth = await isAuthenticated();
@@ -358,18 +350,13 @@ function updateCartCount(isAuth) {
 
 }
 
-
 function showDropdown(itemId) {
     document.getElementById(`quantityText_${itemId}`).style.display = 'none';
     document.getElementById(`editButton_${itemId}`).style.display = 'none';
     document.getElementById(`quantityDropdown_${itemId}`).style.display = 'block';
 }
-
 async function updateQuantity(productId) {
     const selectedValue = document.getElementById(`quantitySelect_${productId}`).value;
-    
-
-
     
     document.getElementById(`quantityDropdown_${productId}`).style.display = 'none';
     document.getElementById(`editButton_${productId}`).style.display = 'inline';
@@ -439,24 +426,11 @@ async function updateQuantity(productId) {
     document.getElementById(`quantityText_${productId}`).innerText = selectedValue;
     
 }
-
 function cancel(itemId) {
     document.getElementById(`quantityDropdown_${itemId}`).style.display = 'none';
     document.getElementById(`editButton_${itemId}`).style.display = 'inline';
     document.getElementById(`quantityText_${itemId}`).style.display = 'inline';
 }
-
-
-
-
-
-
-
-
-
-
-
-
 // Изменение  суммы корзины JS
 function updateTotal(totalAmount) {
     const totalElement = document.getElementById('totalAmount');
@@ -704,9 +678,6 @@ function removeFavoriteProductFromFavotetiesPage(productId) {
         productCard.parentElement.remove();
     }
 }
-
-
-
 // Синхронизация избранных товаров
 async function syncFavorites() {
     
@@ -758,6 +729,7 @@ function updateFavoriteButtons(favoriteProductIds) {
         }
     }
 }
+
 // Переменные для сохранения данных модального окна
 var originalModalBody;
 var originalModalHeaderName;

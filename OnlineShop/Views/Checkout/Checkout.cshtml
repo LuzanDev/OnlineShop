@@ -1,0 +1,127 @@
+﻿@model OnlineShop.Views.ViewModel.CheckoutViewModel
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Оформление заказа</title>
+    <object type="image/svg+xml" data="img/icons.svg" style="display:none;"></object>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/OnlineShop.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container text-center">
+            <div class="row">
+                <div class="col">
+                    <a aria-label="Главная страница OnlineShop" title="Главная страница OnlineShop"
+                        asp-controller="Product" asp-action="Products">
+                        <img src="/img/shop-logo.png" alt="Online Shop Logo">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mt-5">
+        <div class="row mb-4">
+            <h3 class="fw-bold">Оформление заказа</h3>
+        </div>
+        <div class="row">
+            <div class="col-lg-9 col-12">
+                <form>
+                    <div class="row">
+                        <div class="col">
+                            <label asp-for="UserPhoneNumber ">Мобильный телефон</label>
+                            <div class="d-flex">
+                                <input class="form-control form-control-sm rounded-3" style="width: 3rem;" type="text"
+                                    placeholder="+38" disabled>
+                                <input asp-for="UserPhoneNumber" class="form-control rounded-3 ms-1" type="text"
+                                    required oninput="filterInput(this)" onfocus="removeSpaces(this)"
+                                    onblur="formatPhoneNumber(this)" maxlength="10" />
+                            </div>
+                            <span asp-validation-for="UserPhoneNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="col">
+                            <div>
+                                <label asp-for="UserEmail">Електронная почта</label>
+                                <input asp-for="UserEmail" type="email" class="form-control rounded-3"
+                                    placeholder="name@example.com" required />
+                                <span asp-validation-for="UserEmail" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col">
+                            <div>
+                                <label asp-for="UserSurname ">Фамилия</label>
+                                <input asp-for="UserSurname" class="form-control rounded-3" required />
+                                <span asp-validation-for="UserSurname" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div>
+                                <label asp-for="UserName">Имя</label>
+                                <input asp-for="UserName" class="form-control rounded-3" required />
+                                <span asp-validation-for="UserName" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-lg-3 col-12">
+                <div class="card mt-3 mt-lg-0">
+                    <div class="card-body">
+                        <h5 class="card-title">Сумма заказа</h5>
+                        <p id="totalAmount" class="card-text">@Model.Cart.TotalAmount</p>
+                        <button id="btnCheckout" class="btn btn-dark btn-pay-order-cart">Оплатить</button>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+
+
+
+
+
+    </div>
+</body>
+
+<script>
+
+function filterInput(input) {
+    input.value = input.value.replace(/[^0-9]/g, '');
+}
+
+function removeSpaces(input) {
+    input.value = input.value.replace(/\s+/g, '');
+}
+function formatPhoneNumber(input) {
+    const value = input.value.replace(/\s+/g, ''); // Удаляем пробелы
+    if (value.length === 10) {
+        input.value = value.replace(/(\d{3})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4');
+    }
+}
+
+</script>
+</html>
+
+
+
+
+
+
+
+
+
+

@@ -2,38 +2,46 @@
 <div class="container">
     <div class="row mt-4">
         <div class="col-8">
-            <div class="image-container">
-                @foreach (var image in Model.Product.Images)
-                {
-                    <img src="@image.GetImageUrl()" alt="@Model.Product.Name" class="product-image" />
-                }
+    <div id="lightgallery" class="row">
+        @foreach (var image in Model.Product.Images)
+        {
+            <div class="col-6 mb-2">
+                <a href="@image.GetImageUrl()" class="product-image" data-src="@image.GetImageUrl()">
+                    <img data-src="@image.GetImageUrl()" alt="@Model.Product.Name" class="img-fluid d-none" />
+                </a>
             </div>
-        </div>
-        <div id="product-text-form" class="col-4 fixed-col">
+        }
+    </div>
+</div>
+        <!-- ------------------------------------------------------- -->
+        <div id="product-text-form" class="col-4">
             <h3 class="view-name-product">@Model.Product.Brand.Name</h3>
-            <p class="view-description-product mb-5">@Model.Product.Description</p>
+            <p class="view-description-product mb-3 mb-lg-5">@Model.Product.Description</p>
             <p class="view-price-product">@Model.Product.Price.ToString("C0", new System.Globalization.CultureInfo("uk-UA"))</p>
             <div class="row">
-                <div class="col-md-8 ">
-                    <button id="product-cart-btn" type="button" class="btn btn-dark w-100 btn-buy-product @(Model.inCart ? "active" : "")"
+                <div class="col-8" style="padding-right: 5px !important; padding-left: 5px !important;">
+                    <button id="product-cart-btn" type="button" class="btn btn-dark w-100 h-100 btn-buy-product @(Model.inCart ? "active" : "")"
                             data-product-id="@Model.Product.Id">
-                        @(Model.inCart ? "Уже в корзине" : "Добавить в корзину")
+                            <span class="cart-text">@(Model.inCart ? "Уже в корзине" : "Добавить в корзину")</span>
+                            <img src="/img/@(Model.inCart ? "done-solid" : "cart-plus-solid").svg" alt="Cart" class="cart-button-icon">
                     </button>
                 </div>
-                <div class="col-md-4">
+                <div class="col-4" style="padding-right: 5px !important; padding-left: 0px !important;">
                     <button id="product-favorite-btn" type="button" 
                     class="btn btn-light btn-outline-dark w-100 btn-favorite @(Model.isFavorite ? "active" : "")"
                             data-product-id="@Model.Product.Id">
                         <span class="favorite-text">Избранное</span>
                         <img src="/img/@(Model.isFavorite ? "favorite_fill" : "favorite_border").svg" alt="Favorite" class="btn-icon">
                     </button>
-
                 </div>
-
             </div>
         </div>
     </div>
-    <div class="accordion mt-4" id="accordionExample">
+    <!-- ----------------------------------------------------------------------------------- -->
+
+
+    
+    <div class="accordion mt-5" id="accordionExample">
         <div class="accordion-item">
             <h2 class="accordion-header">
                 <button class="accordion-button collapsed delivery-and-return-accordion" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
@@ -55,9 +63,9 @@
                                 <h5>Примерная дата доставки:</h5>
                                 <ul class="ul-main-acc-body">
                                     <li>Заказ до 15:00: Отправка в день оформления заказа</li>
-                                    <li>Заказ после 15:00: Отправка на слудующий день</li>
+                                    <li>Заказ после 15:00: Отправка на следующий день</li>
                                 </ul>
-                                <div class="row d-flex align-items-center ">
+                                <div class="row d-flex align-items-center">
                                     <div class="col-auto">
                                         <img src="/img/np-logo.png" alt="New Post" class="np-icon">
                                     </div>
@@ -67,357 +75,418 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     <div class="row mt-4">
         <div class="col-12">
-                <p class="advantages-header-text">Преимущества OnlineShop</p>
+            <p class="advantages-header-text">Преимущества OnlineShop</p>
         </div>
         <div class="row">
             <div class="col-md-4 col-sm-12">
-                    <img src="/img/more-product.svg" alt="More Product">
-                    <p class="fw-bold mt-3">Большой выбор</p>
-                    <p>Более 100 000 моделей</p>
+                <img src="/img/more-product.svg" alt="More Product">
+                <p class="fw-bold mt-3">Большой выбор</p>
+                <p>Более 100 000 моделей</p>
             </div>
-                <div class="col-md-4 col-sm-12">
-                    <img src="/img/star.svg" alt="Stars">
-                    <p class="fw-bold mt-3">Оценка 4,7/5 и 25 000+ отзывов</p>
-                    <p>Вы можете положиться на нас</p>
-                </div>
-                <div class="col-md-4 col-sm-12">
-                    <img src="/img/return-product.svg" alt="Return Product">
-                    <p class="fw-bold mt-3">Бесплатный возврат</p>
-                    <p>Передумали? Не проблема.</p>
-                </div>
+            <div class="col-md-4 col-sm-12">
+                <img src="/img/star.svg" alt="Stars">
+                <p class="fw-bold mt-3">Оценка 4,7/5 и 25 000+ отзывов</p>
+                <p>Вы можете положиться на нас</p>
+            </div>
+            <div class="col-md-4 col-sm-12">
+                <img src="/img/return-product.svg" alt="Return Product">
+                <p class="fw-bold mt-3">Бесплатный возврат</p>
+                <p>Передумали? Не проблема.</p>
+            </div>
         </div>
     </div>
     <div class="row mt-4 mb-5">
-            <div class="col-12">
-                <p class="advantages-header-text">Свяжитесь с нами</p>
+        <div class="col-12">
+            <p class="advantages-header-text">Свяжитесь с нами</p>
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-sm-12">
+                <div class="call-back-information">
+                    <img src="/img/mail.svg" alt="Mail" class="mini-icon-call-back">
+                    <p class="text-uppercase">Почта</p>
+                    <p>Отправьте запрос через форму обратной связи.</p>
+                    <p>customerservice.onlineshop@gmail.com</p>
+                </div>
             </div>
-            <div class="row">
-                <div class="col-md-6 col-sm-12">
-                    <div class="call-back-information">
-                        <img src="/img/mail.svg" alt="Mail" class="mini-icon-call-back">
-                        <p class="text-uppercase">Почта</p>
-                        <p>Отправьте запрос через форму обратной связи.</p>
-                        <p>customerservice.onlineshop@gmail.com</p>
-                    </div>
-                    
+            <div class="col-md-6 col-sm-12">
+                <div class="call-back-information">
+                    <img src="/img/phone.svg" alt="Phone" class="mini-icon-call-back">
+                    <p class="text-uppercase">По телефону</p>
+                    <p>Available Monday to Friday, 09:00 – 18:00 GMT</p>
+                    <p>+44 (0)20 3962 2362</p>
                 </div>
-                <div class="col-md-6 col-sm-12">
-                    <div class="call-back-information">
-                        <img src="/img/phone.svg" alt="Phone" class="mini-icon-call-back">
-                        <p class="text-uppercase">По телефону</p>
-                        <p>Available Monday to Friday, 09:00 – 18:00 GMT</p>
-                        <p>+44 (0)20 3962 2362</p>
-                    </div>
-                </div>
+            </div>
+        </div>
     </div>
-    </div>
+</div>
+<style>
 
-</>
 
-        <style>
-            /* Фиксация контейнера информации о товаре */
-            .fixed-col {
-                position: sticky;
-                top: 0;
-                height: 100vh; /* Выберите высоту в зависимости от вашего контента */
-                overflow-y: auto; /* Разрешить вертикальную прокрутку */
+
+/* TEST */
+/*------------------------------------------------------------------*/
+
+
+
+
+
+/*-----------------------------------------------------------------*/
+/* Форма информации о товаре */
+#product-text-form {
+    font-size: 16px;
+}
+
+#product-text-form .btn {
+    font-weight: bold;
+}
+
+/* Заголовок товара */
+.view-name-product {
+    background-color: transparent;
+    cursor: pointer;
+    transition-property: color, text-decoration;
+    transition-duration: 150ms;
+    color: #222;
+    line-height: 1.27;
+    font-weight: bold;
+    width: fit-content;
+    margin-bottom: 0.5rem;
+}
+
+.view-name-product:hover {
+    text-decoration: underline;
+}
+
+/* Цена товара */
+.view-price-product {
+    font-size: 24px;
+}
+
+
+
+/* Кнопка "Добавить в корзину" */
+.btn-buy-product:hover {
+    background-color: #727272;
+    color: #fff;
+}
+
+
+
+
+/* Кнопка "Избранное" */
+.btn-favorite {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    /*Отступ между иконкой и текстом*/
+}
+
+/* Переопределяем стили hover */
+.btn-favorite:hover {
+    background-color: initial;
+    /*Убираем фоновый цвет при наведении */
+    border-color: initial;
+    /*Убираем цвет границы при наведении*/
+    color: initial;
+    /*Убираем цвет текста при наведении*/
+}
+
+
+/* Когда товар не в избранном, при наведении иконка становится заполненной */
+#product-favorite-btn:hover:not(.active) .btn-icon {
+    content: url('/img/favorite_fill.svg');
+}
+/* Когда товар не в корзине, при наведении иконка становится галочкой */
+#product-cart-btn:hover:not(.active) .cart-button-icon {
+    content: url('/img/done-solid.svg');
+}
+
+/* not active */
+#product-favorite-btn .btn-icon {
+    content: url('/img/favorite_border.svg');
+}
+
+#product-cart-btn .cart-button-icon {
+    content: url('/img/cart-plus-solid.svg');
+}
+
+/* active */
+#product-favorite-btn.active .btn-icon {
+    content: url('/img/favorite_fill.svg');
+}
+
+#product-cart-btn.active .cart-button-icon {
+    content: url('/img/done-solid.svg');
+}
+
+
+/* Когда товар в избранном, при наведении иконка становится пустой */
+#product-favorite-btn.active:hover .btn-icon {
+    content: url('/img/favorite_border.svg');
+}
+
+#product-cart-btn.active:hover .cart-button-icon {
+    content: url('/img/xmark-solid.svg');
+}
+
+.btn-outline-dark.active,
+.btn-outline-dark:active {
+    color: initial;
+    /* Оставляем исходный цвет текста */
+    background-color: initial;
+    /* Оставляем исходный цвет фона */
+    border-color: initial;
+    /* Оставляем исходный цвет границы */
+}
+
+#product-favorite-btn:focus,
+#product-favorite-btn.active:focus,
+#product-favorite-btn:active,
+#product-favorite-btn.active {
+    outline: none;
+    /* Убираем внешнюю обводку (outline) */
+    box-shadow: none;
+    /* Убираем тень при фокусе */
+    border: 1px solid #212529;
+    /* Сохраняем границу кнопки (если ее цвет нужно настроить) */
+}
+
+
+
+
+
+
+
+/* Стили и настройка аккардиона */
+.delivery-and-return-accordion {
+    color: #222;
+    height: 3.5rem;
+    text-transform: uppercase;
+}
+
+.delivery-and-return-accordion:not(.collapsed) {
+    color: #222;
+    background: none;
+    box-shadow: none;
+}
+
+.delivery-and-return-accordion:focus {
+    box-shadow: none;
+}
+
+.accordion-button:not(.collapsed)::after {
+    fill: #222;
+    transition: transform 0.4s ease-in-out;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23212529' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+}
+
+.accordion-button::after {
+    transition: transform 0.4s ease-in-out;
+}
+
+.ul-main-acc-body {
+    padding: 15px;
+}
+
+.info-delivery {
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.np-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Преимущества OnlineShop */
+.advantages-header-text {
+    font-size: 20px;
+}
+
+/* Свяжитесь с нами */
+.mini-icon-call-back {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.call-back-information {
+    padding-left: 15px;
+    border: 0.1rem solid #e6e6e6;
+    background-color: #fff;
+}
+
+/* Цвет footer слайдера изображений  */
+.lg-outer .lg-thumb-outer {
+    background-color: #ffffff !important; /* Устанавливаем серый цвет для контейнера миниатюр */
+}
+
+
+
+
+</style>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+    loadFavoriteAndCartIcon();
+    AddHandlerClickFavoriteButton();
+    AddHandlerClickCartButton();
+    initializeLoading();
+});
+
+
+function initializeLoading() {
+    const images = document.querySelectorAll('.product-image img');
+    let loadedImages = 0;
+
+    images.forEach(image => {
+        const img = new Image();
+        img.src = image.dataset.src;
+
+        img.onload = function () {
+            image.src = img.src;
+            image.classList.remove('d-none');
+            loadedImages++;  // Отслеживаем количество загруженных изображений
+
+            // Если все изображения загружены, инициализируем галерею
+            if (loadedImages === images.length) {
+                initializeLightGallery();
             }
+        };
+    });
+}
 
-            /* Отображение изображений */
-            .image-container {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px; /* Настройте расстояние по вашему усмотрению */
-            }
-
-            .product-image {
-                flex: 1 1 48%; /* Настройте это значение, чтобы обеспечить два изображения в строке */
-                max-width: 47%; /* Настройте это значение, чтобы обеспечить два изображения в строке */
-                box-sizing: border-box; /* Включение отступов и границ в ширину */
-                transition: all 0.5s ease-in-out; /* Плавный переход размеров */
-            }
-
-            /* Форма информации о товаре */
-            #product-text-form {
-                font-size: 16px;
-            }
-
-                #product-text-form .btn {
-                    font-weight: bold;
-                }
-
-            /* Заголовок товара */
-            .view-name-product {
-                background-color: transparent;
-                cursor: pointer;
-                transition-property: color, text-decoration;
-                transition-duration: 150ms;
-                color: #222;
-                line-height: 1.27;
-                font-weight: bold;
-                width: fit-content;
-                margin-bottom: 0.5rem;
-            }
-
-                .view-name-product:hover {
-                    text-decoration: underline;
-                }
-
-            /* Цена товара */
-            .view-price-product {
-                font-size: 24px;
-            }
-
-            /* Кнопка "Добавить в корзину" */
-            .btn-buy-product:hover {
-                background-color: #727272;
-                /*border: 0.1rem solid hsla(0,0%,100%,0);*/
-                color: #fff;
-            }
-
-            
-
-
-            /* Кнопка "Избранное" */
-            .btn-favorite {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 4px; /*Отступ между иконкой и текстом*/
-            }
-                /* Переопределяем стили hover */
-                .btn-favorite:hover {
-                    background-color: initial; /*Убираем фоновый цвет при наведении */
-                    border-color: initial; /*Убираем цвет границы при наведении*/
-                    color: initial; /*Убираем цвет текста при наведении*/
-                }
-
-
-            /* Когда товар не в избранном, при наведении иконка становится заполненной */
-            #product-favorite-btn:hover:not(.active) .btn-icon {
-                content: url('/img/favorite_fill.svg');
-            }
-
-            /* not active */
-            #product-favorite-btn .btn-icon {
-                content: url('/img/favorite_border.svg');
-            }
-
-            /* active */
-            #product-favorite-btn.active .btn-icon {
-                content: url('/img/favorite_fill.svg'); 
-            }
-
-
-            /* Когда товар в избранном, при наведении иконка становится пустой */
-            #product-favorite-btn.active:hover .btn-icon {
-                content: url('/img/favorite_border.svg');
-            }
-
-
-            .btn-outline-dark.active,
-            .btn-outline-dark:active {
-                color: initial; /* Оставляем исходный цвет текста */
-                background-color: initial; /* Оставляем исходный цвет фона */
-                border-color: initial; /* Оставляем исходный цвет границы */
-            }
-
-            #product-favorite-btn:focus,
-            #product-favorite-btn.active:focus,
-            #product-favorite-btn:active,
-            #product-favorite-btn.active {
-                outline: none; /* Убираем внешнюю обводку (outline) */
-                box-shadow: none; /* Убираем тень при фокусе */
-                border: 1px solid #212529; /* Сохраняем границу кнопки (если ее цвет нужно настроить) */
-            }
+function initializeLightGallery() {
+    lightGallery(document.getElementById('lightgallery'), {
+        selector: '.product-image',
+        plugins: [lgZoom, lgThumbnail],
+        zoom: true,
+        thumbnail: true,
+        fullScreen: true,
+        download : false,
+        showCloseIcon: true,
+        autoplay: false,
+        thumbWidth: 60,
+        thumbHeight: 'auto',
+        exThumbImage: 'data-src'
+    });
+}
 
 
 
-
-
-
-
-            /* Стили и настройка аккардиона */
-            .delivery-and-return-accordion {
-                color: #222;
-                height: 3.5rem;
-                text-transform: uppercase;
-            }
-
-                .delivery-and-return-accordion:not(.collapsed) {
-                    color: #222;
-                    background: none;
-                    box-shadow: none;
-                }
-
-                .delivery-and-return-accordion:focus {
-                    box-shadow: none;
-                }
-
-            .accordion-button:not(.collapsed)::after {
-                fill: #222;
-                transition: transform 0.4s ease-in-out;
-                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23212529' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
-            }
-
-            .accordion-button::after {
-                transition: transform 0.4s ease-in-out;
-            }
-
-            .ul-main-acc-body {
-                padding: 15px;
-            }
-
-            .info-delivery {
-                padding-right: 0;
-                padding-left: 0;
-            }
-
-            .np-icon {
-                width: 20px;
-                height: 20px;
-            }
-
-            /* Преимущества OnlineShop */
-            .advantages-header-text {
-                font-size: 20px;
-            }
-            /* Свяжитесь с нами */
-            .mini-icon-call-back {
-                margin-top: 20px;
-                margin-bottom: 20px;
-            }
-
-            .call-back-information {
-                padding-left: 15px;
-                border: 0.1rem solid #e6e6e6;
-                background-color: #fff;
-            }
-
-        </style>
-       <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                loadFavoriteAndCartIcon();
-                AddHandlerClickFavoriteButton();
-                AddHandlerClickCartButton();
-            });
-
-
-    // Состояние избранного товара для неавторизованного пользователя
-   async function loadFavoriteAndCartIcon()
-    {
-        const isAuth = await isAuthenticated();
-        if (!isAuth)
-        {
-            updateFavoriteIcon();
-            updateCartButton();
-        }
-        
+// Состояние избранного товара для неавторизованного пользователя
+async function loadFavoriteAndCartIcon() {
+    const isAuth = await isAuthenticated();
+    if (!isAuth) {
+        updateFavoriteIcon();
+        updateCartButton();
     }
-    // Функция для проверки состояния избранного товара для неавторизованного пользователя
-        function updateFavoriteIcon() {
-            const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-            const favoriteButton = document.querySelector('#product-favorite-btn');
-            const productId = favoriteButton.dataset.productId;
-            if (favorites.includes(productId)) {
-                    favoriteButton.classList.add('active');
-                } 
-        }
-    // Функция для проверки состояния кнопки (нет /в корзине) для неавторизованного пользователя
-        function updateCartButton() {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            const cartButton = document.querySelector('#product-cart-btn');
-            const productId = cartButton.dataset.productId;
-            if (cart.findIndex(item => item.ProductId === productId) !== -1) {
-                    cartButton.classList.add('active');
-                    cartButton.textContent = "Уже в корзине";
-                } 
-        }
-    // Добавляем обработчик для кнопки избранное
-    async function AddHandlerClickFavoriteButton() 
-    {
-        const favoriteButton = document.querySelector('#product-favorite-btn');
-        favoriteButton.addEventListener('click', async function () {
+
+}
+// Функция для проверки состояния избранного товара для неавторизованного пользователя
+function updateFavoriteIcon() {
+    const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+    const favoriteButton = document.querySelector('#product-favorite-btn');
+    const productId = favoriteButton.dataset.productId;
+    if (favorites.includes(productId)) {
+        favoriteButton.classList.add('active');
+    }
+}
+// Функция для проверки состояния кнопки (нет /в корзине) для неавторизованного пользователя
+function updateCartButton() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const cartButton = document.querySelector('#product-cart-btn');
+    const cartText = cartButton.querySelector('.cart-text');
+    const productId = cartButton.dataset.productId;
+    if (cart.findIndex(item => item.ProductId === productId) !== -1) {
+        cartButton.classList.add('active');
+        cartText.textContent = "Уже в корзине";
+    }
+}
+// Добавляем обработчик для кнопки избранное
+async function AddHandlerClickFavoriteButton() {
+    const favoriteButton = document.querySelector('#product-favorite-btn');
+    favoriteButton.addEventListener('click', async function () {
         const productId = favoriteButton.dataset.productId;
         let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
 
-            // Проверка авторизации
-            const isAuth = await isAuthenticated();
-            if (isAuth) {
-                // Если пользователь авторизован, отправляем запрос на сервер
-                if (favoriteButton.classList.contains('active')) {
-                    await removeFromFavorites(productId);
-                    favoriteButton.classList.remove('active');
-                } else {
-                    await addToFavorites(productId);
-                    favoriteButton.classList.add('active');
-                }
+        // Проверка авторизации
+        const isAuth = await isAuthenticated();
+        if (isAuth) {
+            // Если пользователь авторизован, отправляем запрос на сервер
+            if (favoriteButton.classList.contains('active')) {
+                await removeFromFavorites(productId);
+                favoriteButton.classList.remove('active');
             } else {
-                // Если пользователь не авторизован, работаем с localStorage
-                if (favorites.includes(productId)) {
-                    // Удаление товара из избранного
-                    favorites = favorites.filter(id => id !== productId);
-                    favoriteButton.classList.remove('active');
-                } else {
-                    // Добавление товара в избранное
-                    favorites.push(productId);
-                    favoriteButton.classList.add('active');
-                }
-                localStorage.setItem('favorites', JSON.stringify(favorites));
-                updateFavoriteCount();
+                await addToFavorites(productId);
+                favoriteButton.classList.add('active');
             }
-});
-
-    }
-
-            // Добавляем обработчик для кнопки корзина
-            async function AddHandlerClickCartButton() {
-                const cartButton = document.querySelector('#product-cart-btn'); 
-                cartButton.addEventListener('click', async function () {
-                    const productId = cartButton.dataset.productId;
-                    let cart = JSON.parse(localStorage.getItem('cart')) || [];
-                     
-
-                    // Проверка авторизации
-                    const isAuth = await isAuthenticated();
-                    if (isAuth) {
-                        // Если пользователь авторизован, отправляем запрос на сервер
-                        if (cartButton.classList.contains('active')) {
-                            await removeProductFromCarts(productId); 
-                            cartButton.classList.remove('active');
-                            cartButton.textContent = "Добавить в корзину";
-                        } else {
-                            await addProductToCarts(productId); 
-                            cartButton.classList.add('active');
-                            cartButton.textContent = "Уже в корзине";
-                        }
-                    } else {
-                        // Если пользователь не авторизован, работаем с localStorage
-                        if (cart.findIndex(item => item.ProductId === productId) !== -1) {
-                            // Удаление товара из корзины
-                            cart = cart.filter(item => item.ProductId !== productId);
-                            cartButton.classList.remove('active');
-                            cartButton.textContent = "Добавить в корзину";
-                        } else {
-                            // Добавление товара в корзину
-                            cart.push({ ProductId: productId, Quantity: 1 });
-                            cartButton.classList.add('active');
-                            cartButton.textContent = "Уже в корзине";
-                        }
-                        localStorage.setItem('cart', JSON.stringify(cart));
-                        updateCartCount(false);
-                    }
-                });
+        } else {
+            // Если пользователь не авторизован, работаем с localStorage
+            if (favorites.includes(productId)) {
+                // Удаление товара из избранного
+                favorites = favorites.filter(id => id !== productId);
+                favoriteButton.classList.remove('active');
+            } else {
+                // Добавление товара в избранное
+                favorites.push(productId);
+                favoriteButton.classList.add('active');
             }
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            updateFavoriteCount();
+        }
+    });
+
+}
+// Добавляем обработчик для кнопки корзина
+async function AddHandlerClickCartButton() {
+    const cartButton = document.querySelector('#product-cart-btn');
+    const cartText = cartButton.querySelector('.cart-text');
+    cartButton.addEventListener('click', async function () {
+        const productId = cartButton.dataset.productId;
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
 
-       </script>
+        // Проверка авторизации
+        const isAuth = await isAuthenticated();
+        if (isAuth) {
+            // Если пользователь авторизован, отправляем запрос на сервер
+            if (cartButton.classList.contains('active')) {
+                await removeProductFromCarts(productId);
+                cartButton.classList.remove('active');
+                cartText.textContent = "Добавить в корзину";
+            } else {
+                await addProductToCarts(productId);
+                cartButton.classList.add('active');
+                cartText.textContent = "Уже в корзине";
+            }
+        } else {
+            // Если пользователь не авторизован, работаем с localStorage
+            if (cart.findIndex(item => item.ProductId === productId) !== -1) {
+                // Удаление товара из корзины
+                cart = cart.filter(item => item.ProductId !== productId);
+                cartButton.classList.remove('active');
+                cartText.textContent = "Добавить в корзину";
+            } else {
+                // Добавление товара в корзину
+                cart.push({ ProductId: productId, Quantity: 1 });
+                cartButton.classList.add('active');
+                cartText.textContent = "Уже в корзине";
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount(false);
+        }
+    });
+}
 
-
+</script>
         
+    

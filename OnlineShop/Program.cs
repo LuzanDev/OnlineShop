@@ -6,13 +6,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 // My services
 builder.Services.AddDataAccessLayer(builder.Configuration);
-//builder.WebHost.ConfigureKestrel(options =>
-//{
-//    options.ListenAnyIP(44368, listenOptions =>
-//    {
-//        listenOptions.UseHttps(); // Убедитесь, что используется HTTPS
-//    });
-//});
+
+
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(44368, listenOptions =>
+    {
+        listenOptions.UseHttps(); // Включение HTTPS для любого IP-адреса
+    });
+});
+
+
 
 var app = builder.Build();
 

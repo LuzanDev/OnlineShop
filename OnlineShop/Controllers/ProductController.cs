@@ -92,7 +92,7 @@ namespace OnlineShop.Controllers
         {
             var responseProduct = await _productService.GetAllProducts();
             var listFavorite = new List<long>();
-           // var test = await _cartService.UpdateCartItemQuantity(User.FindFirstValue(ClaimTypes.NameIdentifier), 2, 10);
+           
             if (User.Identity.IsAuthenticated)
             {
                 var listFavoriteIds = await _userFavoritesService.GetFavoriteProductIds(User.FindFirstValue(ClaimTypes.NameIdentifier));
