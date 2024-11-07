@@ -6,7 +6,8 @@ namespace OnlineShop.Models.Interfaces.Services
 {
     public interface ICartService
     {
-        Task<BaseResult<Cart>> GetCart(string id);
+        Task<BaseResult<Cart>> GetCart(string userId);
+        Task<BaseResult<Cart>> GetCartById(int id);
         Task<BaseResult<decimal>> GetTotalAmountCart(string id);
         Task<BaseResult<Cart>> AddItemToCart(string userId, long productId);
         Task<BaseResult<Cart>> RemoveItemToCart(string userId, long productId);

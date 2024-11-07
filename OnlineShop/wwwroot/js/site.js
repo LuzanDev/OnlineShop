@@ -24,7 +24,6 @@ async function handleCheckoutClick() {
         modal.show();
         return;
     }
-    //fetch('/Checkout/Checkout', { method: 'GET' });
     window.location.href = '/checkout';
 }
 

@@ -6,6 +6,7 @@
         public long ProductId { get; set; }
         public int Quantity { get; set; }
         public decimal Total => Quantity * Product.Price; 
-        public Product Product { get; set; } 
+        public Product Product { get; set; }
+        public int OrderId { get; set; }
     }
 }

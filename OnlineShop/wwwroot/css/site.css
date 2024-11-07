@@ -32,6 +32,10 @@ table img {
     width: 1rem;
     height: 1rem;
 }
+/* Убрать отступы  */
+.text-info-client {
+    margin: 0;
+}
 /*---Корзина---*/
 .btn-pay-order-cart:hover {
     background-color: #727272;

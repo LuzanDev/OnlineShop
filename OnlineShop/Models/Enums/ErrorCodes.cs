@@ -29,6 +29,14 @@
         ProductAbsentInCart = 53,
         CartItemNotFound = 54,
 
+        // City
+        CityCollectionNotFound = 61,
+        CityNotFound = 62,
+
+
+        // Order
+        OrderNotFound = 71,
+        OrderCollectionNotFound = 72,
 
 
         //DataBaseError

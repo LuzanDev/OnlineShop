@@ -46,11 +46,15 @@ namespace OnlineShop.Models.DAL.DependencyInjection
             services.AddScoped<IBaseRepository<Category>, BaseRepository<Category>>();
             services.AddScoped<IBaseRepository<FavoriteProduct>, BaseRepository<FavoriteProduct>>();
             services.AddScoped<IBaseRepository<Cart>, BaseRepository<Cart>>();
+            services.AddScoped<IBaseRepository<City>, BaseRepository<City>>();
+            services.AddScoped<IBaseRepository<Order>, BaseRepository<Order>>();
 
 
 
 
             //services
+            services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<ICityService, CityService>();
             services.AddScoped<ICartService, CartService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IBrandService, BrandService>();

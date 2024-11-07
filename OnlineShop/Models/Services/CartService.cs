@@ -73,14 +73,14 @@ namespace OnlineShop.Models.Services
                 Data = cart
             };
         }
-        public async Task<BaseResult<Cart>> GetCart(string id)
+        public async Task<BaseResult<Cart>> GetCart(string userId)
         {
 
             var cart = await _cartRepository.GetAll()
                 .Include(c => c.CartItems)
                 .ThenInclude(ci => ci.Product)
                 .ThenInclude(x => x.Images)
-                .FirstOrDefaultAsync(x => x.UserId == id);
+                .FirstOrDefaultAsync(x => x.UserId == userId);
 
             if (cart == null)
             {
@@ -274,6 +274,28 @@ namespace OnlineShop.Models.Services
             return new BaseResult<decimal>
             {
                 Data = cartItem.Total
+            };
+        }
+
+        public async Task<BaseResult<Cart>> GetCartById(int id)
+        {
+            var cart = await _cartRepository.GetAll()
+                .Include(c => c.CartItems)
+                .ThenInclude(ci => ci.Product)
+                .ThenInclude(x => x.Images)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (cart == null)
+            {
+                return new BaseResult<Cart>
+                {
+                    ErrorMessage = "CartNotFound",
+                    ErrorCode = (int)ErrorCodes.CartNotFound
+                };
+            }
+            return new BaseResult<Cart>()
+            {
+                Data = cart
             };
         }
     }

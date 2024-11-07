@@ -1,0 +1,103 @@
+﻿@model OnlineShop.Views.ViewModel.OrderViewModel
+<div class="row text-center">
+    <svg class="icon" width="50" height="50">
+        <use xlink:href="/img/icons.svg#icon-done-logo"></use>
+    </svg>
+</div>
+<div class="row text-center mt-3">
+    <h3>Спасибо, ваш заказ принят!</h3>
+    <p>Ожидайте уведомление о смене статуса заказа</p>
+</div>
+<div class="row">
+    <div class="card">
+        <div class="card-header">
+            № @Model.Id от @Model.OrderDate
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-4 col-12">
+                    <p class="fw-bold">Адрес доставки</p>
+                    <p>@Model.City, @Model.ShippingAddress</p>
+                    <p class="fw-bold">Получатель заказа</p>
+                    <p class="text-info-client">@Model.FullUserName</p>
+                    <p class="text-info-client">@Model.UserNumberPhone</p>
+                    <p class="text-info-client">@Model.UserEmailAddress</p>
+                </div>
+                <div class="col-lg-8 mt-lg-0 mt-4 col-12">
+                    <div class="row">
+                        <ul class="list-group">
+                            @foreach (var orderItem in Model.OrderItems)
+                            {
+                                <li class="list-group-item d-flex align-items-center justify-content-between flex-wrap">
+                                    <div class="flex-shrink-0 me-3" style="width: 70px;">
+                                        <a href="@Url.Action("Product", "Product" , new { id=orderItem.Product.Id })">
+                                            <img src="data:image/jpeg;base64,@Convert.ToBase64String(orderItem.Product.Images.First().Data)"
+                                                 alt="@orderItem.Product.Name"
+                                                 style="max-width: 100%; max-height: 70px; object-fit: cover;">
+                                        </a>
+                                    </div>
+                                    <div class="flex-grow-1 me-3 text-truncate">
+                                        <p class="mb-0">@orderItem.Product.Name</p>
+                                        <p class="mb-0">@orderItem.Product.Description</p>
+                                    </div>
+                                    <div class="flex-shrink-0 me-3" style="min-width: 120px;">
+                                        <p class="mb-0">
+                                            @orderItem.Product.Price.ToString("C0", new System.Globalization.CultureInfo("uk-UA")) x @orderItem.Quantity шт.
+                                        </p>
+                                    </div>
+                                    <div class="flex-shrink-0 text-end" style="min-width: 90px;">
+                                        <p class="mb-0 fw-bold">
+                                            @orderItem.Total.ToString("C0", new System.Globalization.CultureInfo("uk-UA"))
+                                        </p>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="row align-items-center justify-content-between">
+                        <div class="col-auto">
+                            <p>Оплата</p>
+                        </div>
+                        <div class="col-auto">
+                            <p>Оплата при получении товара</p>
+                        </div>
+                    </div>
+                    <div class="row align-items-center justify-content-between">
+                        <div class="col-auto">
+                            <p>Всего</p>
+                        </div>
+                        <div class="col-auto">
+                            <h4 class="fw-bold">
+                                @Model.TotalAmount.ToString("C0", new System.Globalization.CultureInfo("uk-UA"))
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- end -->
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row justify-content-center">
+    <div class="col-lg-4 col-12">
+        <button type="button" class="mt-3 btn btn-light w-100 rounded fw-bold btn-outline-dark"
+                onclick="window.location.href='@Url.Action("Orders", "Order")'">
+            Перейти к моим заказам
+        </button>
+    </div>
+    <div class="col-lg-4 col-12">
+        <button type="button" class="mt-3 btn btn-dark w-100 rounded fw-bold btn-continue-shopping"
+                onclick="window.location.href='@Url.Action("Products", "Product")'">
+            Продолжить шопинг
+        </button>
+    </div>
+</div>
+<style>
+    .icon {
+        height: 100%; /* Растянуть иконку по высоте блока */
+        max-height: 50px; /* Максимальная высота */
+    }
+
+</style>

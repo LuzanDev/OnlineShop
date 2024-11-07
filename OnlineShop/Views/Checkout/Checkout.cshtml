@@ -14,6 +14,11 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/dist/jquery.validate.unobtrusive.min.js"></script>
+
 </head>
 <body>
     <header>
@@ -21,7 +26,7 @@
             <div class="row">
                 <div class="col">
                     <a aria-label="Главная страница OnlineShop" title="Главная страница OnlineShop"
-                        asp-controller="Product" asp-action="Products">
+                       asp-controller="Product" asp-action="Products">
                         <img src="/img/shop-logo.png" alt="Online Shop Logo">
                     </a>
                 </div>
@@ -35,16 +40,16 @@
         </div>
         <div class="row">
             <div class="col-lg-9 col-12">
-                <form>
+                <form id="checkoutForm" asp-action="Checkout" method="post">
                     <div class="row">
                         <div class="col">
                             <label asp-for="UserPhoneNumber ">Мобильный телефон</label>
                             <div class="d-flex">
                                 <input class="form-control form-control-sm rounded-3" style="width: 3rem;" type="text"
-                                    placeholder="+38" disabled>
+                                       placeholder="+38" disabled>
                                 <input asp-for="UserPhoneNumber" class="form-control rounded-3 ms-1" type="text"
-                                    required oninput="filterInput(this)" onfocus="removeSpaces(this)"
-                                    onblur="formatPhoneNumber(this)" maxlength="10" />
+                                       required oninput="filterNumerical(this)" onfocus="removeSpaces(this)"
+                                       onblur="formatPhoneNumber(this)" maxlength="10" />
                             </div>
                             <span asp-validation-for="UserPhoneNumber" class="text-danger"></span>
                         </div>
@@ -53,7 +58,7 @@
                             <div>
                                 <label asp-for="UserEmail">Електронная почта</label>
                                 <input asp-for="UserEmail" type="email" class="form-control rounded-3"
-                                    placeholder="name@example.com" required />
+                                       placeholder="name@example.com" required />
                                 <span asp-validation-for="UserEmail" class="text-danger"></span>
                             </div>
                         </div>
@@ -62,31 +67,178 @@
                         <div class="col">
                             <div>
                                 <label asp-for="UserSurname ">Фамилия</label>
-                                <input asp-for="UserSurname" class="form-control rounded-3" required />
+                                <input asp-for="UserSurname" class="form-control rounded-3" required oninput="filterLetters(this)" />
                                 <span asp-validation-for="UserSurname" class="text-danger"></span>
                             </div>
                         </div>
                         <div class="col">
                             <div>
                                 <label asp-for="UserName">Имя</label>
-                                <input asp-for="UserName" class="form-control rounded-3" required />
+                                <input asp-for="UserName" class="form-control rounded-3" required oninput="filterLetters(this)" />
                                 <span asp-validation-for="UserName" class="text-danger"></span>
                             </div>
                         </div>
                     </div>
+                    <input type="hidden" asp-for="CartId" value="@Model.CartId" />
+                    @* <input type="hidden" asp-for="CityId" id="hiddenCityId" /> *@
+
+
+                    <!-- Выбор города -->
+                    <div class="mt-2">
+                        <label asp-for="CityId" class="form-label">Город</label>
+                        <select asp-for="CityId" id="selectMenuCities" class="form-select" required onchange="fetchWarehouses()">
+                            <option value="" selected>Загрузка...</option>
+                        </select>
+                        <span asp-validation-for="CityId" class="text-danger"></span>
+                    </div>
+                    <div class="row mt-2 mt-md-4 align-items-center justify-content-between">
+                        <div class="col-auto">
+                            <h4>Заказ</h4>
+                        </div>
+                        <div class="col-auto">
+                            <p>
+                                на суму: <b>
+                                    <span>
+                                        @Model.Cart.TotalAmount.ToString("C0", new
+                                                 System.Globalization.CultureInfo("uk-UA"))
+                                    </span>
+                                </b>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <ul class="list-group">
+                            @foreach (var orderItem in Model.Cart.CartItems)
+                            {
+                                <li class="list-group-item d-flex align-items-center justify-content-between flex-wrap">
+                                    <div class="flex-shrink-0 me-3" style="width: 70px;">
+                                        <a href="@Url.Action("Product", "Product" , new { id=orderItem.Product.Id })">
+                                            <img src="data:image/jpeg;base64,@Convert.ToBase64String(orderItem.Product.Images.First().Data)"
+                                                 alt="@orderItem.Product.Name"
+                                                 style="max-width: 100%; max-height: 70px; object-fit: cover;">
+                                        </a>
+                                    </div>
+                                    <div class="flex-grow-1 me-3 text-truncate">
+                                        <p class="mb-0">@orderItem.Product.Name</p>
+                                        <p class="mb-0">@orderItem.Product.Description</p>
+                                    </div>
+                                    <!-- Контейнер для количества и цены на больших экранах -->
+                                    <div class="d-none d-md-flex align-items-center flex-shrink-0 me-3" style="min-width: 120px;">
+                                        <p class="mb-0">
+                                            @orderItem.Product.Price.ToString("C0", new System.Globalization.CultureInfo("uk-UA")) x @orderItem.Quantity шт.
+                                        </p>
+                                    </div>
+                                    <div class="d-none d-md-flex align-items-center flex-shrink-0 text-end" style="min-width: 90px;">
+                                        <p class="mb-0 fw-bold">
+                                            @orderItem.Total.ToString("C0", new System.Globalization.CultureInfo("uk-UA"))
+                                        </p>
+                                    </div>
+
+                                    <!-- Контейнер для количества и цены на маленьких экранах -->
+                                    <div class="d-block d-md-none w-100 d-flex justify-content-between">
+                                        <div>
+                                            <p class="mb-0">
+                                                @orderItem.Product.Price.ToString("C0", new System.Globalization.CultureInfo("uk-UA")) x @orderItem.Quantity шт.
+                                            </p>
+                                        </div>
+                                        <div class="text-end">
+                                            <p class="mb-0 fw-bold">
+                                                @orderItem.Total.ToString("C0", new System.Globalization.CultureInfo("uk-UA"))
+                                            </p>
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+                            <p style="text-align: right; cursor: pointer;" class="continue-shopping mt-2"
+                               onclick="window.location.href='@Url.Action("Cart", "Cart" )'">Изменить товары</p>
+                        </ul>
+                    </div>
+                    <div class="row">
+                        <h4 class="mt-2 mt-md-3">Доставка</h4>
+                        <!-- Отделение -->
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" asp-for="DeliveryType" value="SelfPickup" id="flexRadioDefault1" onchange="toggleSelect(this)">
+                            <label class="form-check-label" for="flexRadioDefault1">
+                                Самовывоз из Новой почты
+                            </label>
+                            <div class="div" id="departmentSelect1" style="display: none; margin-top: 10px;">
+                                <select asp-for="NovaPoshtaDepartment" id="selectDepartmentNP" class="form-select" required>
+                                    <option value="" selected>Загрузка...</option>
+
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Курьер -->
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" asp-for="DeliveryType" value="Courier" id="flexRadioDefault2" onchange="toggleSelect(this)">
+                            <label class="form-check-label" for="flexRadioDefault2">
+                                Доставка курьером
+                            </label>
+                            <div class="div" id="departmentSelect2" style="display: none; margin-top: 10px;">
+                                <div class="d-flex">
+                                    <div class="col-7 me-2">
+                                        <div>
+                                            <label asp-for="Street">Улица</label>
+                                            <input asp-for="Street" class="form-control rounded-3" required />
+                                            <span asp-validation-for="Street" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-2 me-2">
+                                        <div>
+                                            <label asp-for="HouseNumber">Дом</label>
+                                            <input asp-for="HouseNumber" class="form-control rounded-3" required />
+                                            <span asp-validation-for="HouseNumber" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div>
+                                            <label asp-for="ApartmentNumber">Квартира</label>
+                                            <input asp-for="ApartmentNumber" class="form-control rounded-3" />
+                                            <span asp-validation-for="ApartmentNumber" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <span asp-validation-for="DeliveryType" class="text-danger"></span>
+                    </div>
                 </form>
+                <div class="row mb-5">
+                    <h4 class="mt-2 mt-md-3">Оплата</h4>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="flexRadioDisabled" id="flexRadioDisabled"
+                               checked disabled>
+                        <label class="form-check-label" for="flexRadioDisabled">
+                            Оплата при получении
+                        </label>
+                    </div>
+                </div>
+
+
+
+                <!--end col-lg-9 col-12 -->
             </div>
+
+
+
+
             <div class="col-lg-3 col-12">
                 <div class="card mt-3 mt-lg-0">
                     <div class="card-body">
                         <h5 class="card-title">Сумма заказа</h5>
-                        <p id="totalAmount" class="card-text">@Model.Cart.TotalAmount</p>
-                        <button id="btnCheckout" class="btn btn-dark btn-pay-order-cart">Оплатить</button>
+                        <p id="totalAmount" class="card-text fw-bold">
+                            @Model.Cart.TotalAmount.ToString("C0", new
+                                     System.Globalization.CultureInfo("uk-UA"))
+                        </p>
+                        <button type="button" id="btnCheckout" class="btn btn-dark btn-pay-order-cart"
+                                onclick="document.getElementById('checkoutForm').requestSubmit()">
+                            Заказ подтверждаю
+                        </button>
+
                     </div>
                 </div>
             </div>
-
-
         </div>
 
 
@@ -96,22 +248,185 @@
 
     </div>
 </body>
+<footer class="border-top footer text-muted">
+    <div class="container">
+        &copy; 2024 - OnlineShop - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    </div>
+</footer>
 
 <script>
+    $(document).ready(function () {
+        GetCities();
 
-function filterInput(input) {
-    input.value = input.value.replace(/[^0-9]/g, '');
-}
+        const deliveryRadios = document.querySelectorAll('input[name="flexRadioDefault"]');
+        deliveryRadios.forEach(radio => {
+            radio.addEventListener('change', function () {
+                toggleSelect(radio);
+            });
 
-function removeSpaces(input) {
-    input.value = input.value.replace(/\s+/g, '');
-}
-function formatPhoneNumber(input) {
-    const value = input.value.replace(/\s+/g, ''); // Удаляем пробелы
-    if (value.length === 10) {
-        input.value = value.replace(/(\d{3})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4');
+
+        });
+
+
+    });
+
+    // Получение всех складов в Городе (обращение к NP API)
+    function fetchWarehouses() {
+        const select = document.getElementById('selectDepartmentNP');
+        // Очищаем селект и добавляем опцию "Загрузка..."
+        select.innerHTML = ''; // Очищаем селект
+        const loadingOption = document.createElement('option');
+        loadingOption.value = '';
+        loadingOption.textContent = 'Загрузка...';
+        loadingOption.disabled = true;
+        select.appendChild(loadingOption);
+
+        // const hiddenCityId = document.getElementById('hiddenCityId');
+
+        const selectMenu = document.getElementById('selectMenuCities');
+        const selectedCityValue = selectMenu.value;
+        const selectedCity = selectMenu.options[selectMenu.selectedIndex].text;
+
+        // hiddenCityId.value = selectMenu.value;
+        if (!selectedCity) {
+            return;
+        }
+
+        const url = 'https://api.novaposhta.ua/v2.0/json/';
+        const data = {
+            apiKey: "0fec0f8a915d2dcf0daf644d255207d6",
+            modelName: "AddressGeneral",
+            calledMethod: "getWarehouses",
+            methodProperties: {
+                CityName: selectedCity
+            }
+        };
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                populateSelect(data.data);
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
     }
-}
+
+    // Заполнение поля "Склады" Новой Почты
+    function populateSelect(warehouses) {
+        const select = document.getElementById('selectDepartmentNP');
+        select.innerHTML = ''; // Очищаем селект
+
+        // Проверяем наличие данных
+        if (warehouses.length > 0) {
+            warehouses.forEach(warehouse => {
+                const option = document.createElement('option');
+                option.value = warehouse.DescriptionRu; // Устанавливаем нужное значение
+                option.textContent = warehouse.DescriptionRu; // Заполняем текстом
+                select.appendChild(option);
+            });
+
+            // Автоматически выбираем первое отделение
+            select.selectedIndex = 0; // Устанавливаем индекс на первое отделение
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+    // Отображение контента в зависимости от выбора доставки
+    function toggleSelect(radio) {
+        const isSelfPickup = radio.id === "flexRadioDefault1";
+        document.getElementById("departmentSelect1").style.display = isSelfPickup ? 'block' : 'none';
+        document.getElementById("departmentSelect2").style.display = isSelfPickup ? 'none' : 'block';
+
+        if (isSelfPickup) {
+            // Очистить поля для курьерской доставки при выборе самовывоза
+            document.querySelector('input[name="Street"]').value = '';
+            document.querySelector('input[name="HouseNumber"]').value = '';
+            document.querySelector('input[name="ApartmentNumber"]').value = '';
+        } else {
+            // Очистить поле для самовывоза при выборе курьерской доставки
+            document.querySelector('#selectDepartmentNP').value = '';
+        }
+    }
+
+    // Получение название городов из БД и заполнение select "Город"
+    function GetCities() {
+        fetch('/get-cities', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(error => {
+                        throw new Error(`${error.errorCode}: ${error.errorMessage}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const selectMenu = document.getElementById("selectMenuCities");
+                    selectMenu.innerHTML = ''; // Очищаем селект
+
+                    // Добавление каждого города
+                    data.data.forEach(city => {
+                        const option = document.createElement("option");
+                        option.value = city.id;
+                        option.textContent = city.name;
+                        selectMenu.appendChild(option);
+                    });
+
+                    // Устанавливаем первый элемент в качестве выбранного
+                    if (data.data.length > 0) {
+                        selectMenu.selectedIndex = 0; // Устанавливаем индекс на первый элемент
+                        fetchWarehouses();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching cities:", error.message);
+            });
+    }
+
+    // --------------------------------------------------------------------------------------
+    function filterLetters(input) {
+        input.value = input.value.replace(/[^a-zA-Zа-яА-ЯёЁ]/g, '');
+    }
+    function filterNumerical(input) {
+        input.value = input.value.replace(/[^0-9]/g, '');
+    }
+    function removeSpaces(input) {
+        input.value = input.value.replace(/\s+/g, '');
+    }
+    function formatPhoneNumber(input) {
+        const value = input.value.replace(/\s+/g, ''); // Удаляем пробелы
+        if (value.length === 10) {
+            input.value = value.replace(/(\d{3})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4');
+        }
+    }
+    // --------------------------------------------------------------------------------------
 
 </script>
 </html>
