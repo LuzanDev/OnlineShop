@@ -80,60 +80,59 @@
 
 
     <div class="container">
-    <header class="header">
-        <div class="d-none d-md-block"></div> <!-- Пустой блок для выравнивания кнопок -->
-        <a aria-label="Главная страница OnlineShop" title="Главная страница OnlineShop" class="btn-main-page mx-auto"
-               asp-controller="Product" asp-action="Products">
-            <img src="/img/shop-logo.png" alt="Online Shop Logo" class="shop-logo-icon">
-        </a>
-        <div class="header-buttons d-flex">
+        <!-- Header -->
+        <header class="d-flex justify-content-between py-1 py-md-3 align-items-center">
+            <a title="Главная страница OnlineShop" class="" asp-controller="Product"
+               asp-action="Products">
+                <img src="/img/newLogo.png" alt="Online Shop Logo" class="">
+            </a>
+
+            <div class="header-buttons mt-auto">
                 @if (User.Identity.IsAuthenticated)
                 {
-                    // Если пользователь авторизован, отображаем кнопку с выпадающим списком
                     <div class="btn-group" role="group">
                         <button type="button" class="btn-input" data-bs-toggle="dropdown" aria-expanded="false">
                             <img src="/img/user.svg" alt="User Logo" class="user-icon">
                         </button>
-                        <span class="user-name mt-1">
+                        <span class="user-name mt-1 me-2">
                             @{
                                 var userName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? string.Empty;
-                            } 
+                            }
                             @userName
-                            </span>
+                        </span>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="@Url.Action("Orders", "Order")">Мои заказы</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Orders", "Order" )">Мои заказы</a></li>
                             <li><a class="dropdown-item" href="#">Личный кабинет</a></li>
                             <li>
                                 <button type="button" id="btn-user-exit" class="rounded fw-bold btn btn-dark">
-                                Выход
+                                    Выход
                                     <svg width="20" height="20" style="margin-left: auto;" fill="currentColor">
                                         <use xlink:href="/img/icons.svg#icon-exit-user"></use>
                                     </svg>
                                 </button>
-                                </li>
+                            </li>
                         </ul>
                     </div>
                 }
                 else
                 {
-                    // Если пользователь не авторизован, отображаем кнопку входа
-                    <button aria-label="Страница входа" title="Войти" class="btn-input" data-bs-toggle="modal" data-bs-target="#authModal">
+                    <button title="Войти" class="btn-input" data-bs-toggle="modal" data-bs-target="#authModal">
                         <img src="/img/user.svg" alt="User Logo" class="user-icon">
                     </button>
                 }
-                <a aria-label="Товаров в избранном: 0." title="Избранное" class="btn-favorite"
-                   asp-controller="Favorites" asp-action="Favorites">
+                <a title="Избранное" class="btn-favorite" asp-controller="Favorites" asp-action="Favorites">
                     <img src="/img/favorite_border.svg" alt="Favorite Logo" class="favorite-icon">
                     <span class="badge rounded-pill bg-secondary" id="favorites-count">0</span>
                 </a>
-                <a aria-label="Товаров в корзине: 0." title="Корзина" class="btn-cart"
-                   asp-controller="Cart" asp-action="Cart">
+                <a title="Корзина" class="btn-cart" asp-controller="Cart" asp-action="Cart">
                     <img src="/img/cart.svg" alt="Cart Logo" class="cart-icon">
                     <span class="badge rounded-pill bg-secondary" id="cart-count">0</span>
                 </a>
-        </div>
-    </header>
+            </div>
+        </header>
+        <!-- end Header -->
     </div>
+
     <div class="container">
         <div class="d-flex justify-content-between align-items-center">
             <div class="nav-container">
@@ -187,7 +186,7 @@
             &copy; 2024 - OnlineShop - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
-     @* <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> *@ 
+    @* <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> *@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
@@ -195,37 +194,16 @@
 </body>
 </html>
 
-<style>
-    .bg-secondary {
-        background-color: rgb(0 0 0 / 75%) !important;
-    }
-
-    #btn-user-exit{
-        color: #fff;
-        background-color: #212529;
-        border-color: #212529;
-    }
-
-        #btn-user-exit:hover {
-        color: #fff;
-        background-color: #727272;
-        border-color: #1a1e21;
-    }
-        
-
-
-
-</style>
 
 
 <script>
     $(document).ready(function () {
         loadListCategory();
-        
-        
-        
-        
-        
+
+
+
+
+
 
 
 
@@ -268,8 +246,8 @@
 
     // Обработчик нажатия кнопки "Выход"
     $('#btn-user-exit').click(function () {
-    logoutUser();  
-});
+        logoutUser();
+    });
 
 
 
@@ -364,21 +342,21 @@
     document.addEventListener("DOMContentLoaded", async function () {
         saveOriginalAuthModal();
         const isAuth = await isAuthenticated();
-         updateFavoriteCount(isAuth);
-         updateCartCount(isAuth);
-
-
-        
+        updateFavoriteCount(isAuth);
+        updateCartCount(isAuth);
 
 
 
-        
+
+
+
+
     });
 
-        // Обновляем счетчик при изменении избранного (на других страницах через событие)
-        document.addEventListener('favoritesUpdated', function () {
-            updateFavoriteCount();
-        });
+    // Обновляем счетчик при изменении избранного (на других страницах через событие)
+    document.addEventListener('favoritesUpdated', function () {
+        updateFavoriteCount();
+    });
 
 
 

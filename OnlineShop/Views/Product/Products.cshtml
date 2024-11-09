@@ -3,7 +3,7 @@
 <div class="row">
     @foreach (var product in Model.Products)
     {
-        <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
+        <div class="col-lg-3 col-md-4 col-6 mb-2 mb-lg-4">
             <div class="card" data-product-id="@product.Id">
                 @if (product.Images.Any())
                 {
@@ -21,7 +21,7 @@
                 <div class="card-body">
                     <h4 class="card-title">@product.Name</h4>
                     <p class="card-text">@product.Description</p>
-                    <p class="card-text">@product.Price.ToString("C0", new System.Globalization.CultureInfo("uk-UA"))</p>
+                    <p class="card-text fw-bold">@product.Price.ToString("C0", new System.Globalization.CultureInfo("uk-UA"))</p>
                 </div>
             </div>
         </div>
@@ -30,7 +30,16 @@
 
 
 <style>
-    
+    .card-text {
+        display: -webkit-box;
+        -webkit-line-clamp: 2; /* Количество строк для отображения */
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: normal;
+        height: 3em; /* Задайте нужную высоту в зависимости от количества строк */
+    }
+
 
     .current-product-image {
     transition: opacity 0.3s ease;

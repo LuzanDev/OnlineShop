@@ -42,14 +42,6 @@ table img {
     color: #fff;
 }
 
-
-
-
-
-
-/*------------------------------------*/
-
-
 #notification-container {
     display: none;
     position: fixed;
@@ -61,65 +53,79 @@ table img {
     max-width: 90%; /* ������������ ������ ����������� */
 }
 
-/* ���������� Header ______________________________________________________________________________________________________*/
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: #fff;
-}
-
-.header-buttons button {
-    background: none;
-    border: none;
-    margin-left: 10px;
-}
-
-.header-buttons img {
-    height: 1.8rem;
-    width: 1.8rem;
-}
-/* ------------------ Кнопки шапки --------------------------*/
-
-.header-buttons {
-    align-items: center; /* Выравнивание по вертикали */
-}
-
-.header-buttons .btn-group,
-.header-buttons .btn-favorite,
-.header-buttons .btn-cart {
-    margin: 0 4px; /* Отступы между элементами (можете изменить значение) */
-}
-
-.header-buttons .btn-group {
-    display: flex; /* Делаем btn-group flex-контейнером */
-    align-items: center; /* Вертикальное выравнивание содержимого */
-}
-/* -------------------------------------------------------------------*/
-.header-buttons button:hover {
-    background-color: #f5f5f5;
-    color: #727272;
-}
+/* ___________________ Header ________________*/
 .btn-favorite,
 .btn-cart {
     text-decoration: none;
 }
+
     .btn-favorite:hover,
     .btn-cart:hover {
         background-color: #f5f5f5;
         color: #727272;
     }
 
-/* ���������� ������ ��������� � ������� */
+#btn-user-exit:hover {
+    color: #fff;
+    background-color: #727272;
+    border-color: #1a1e21;
+}
+
+#btn-user-exit {
+    color: #fff;
+    background-color: #212529;
+    border-color: #212529;
+}
+
+.bg-secondary {
+    background-color: rgb(0 0 0 / 75%) !important;
+}
+
+.header-buttons img {
+    height: 1.8rem;
+    width: 1.8rem;
+}
+
+.header-buttons button {
+    background: none;
+    border: none;
+}
+
+    .header-buttons button:hover {
+        background-color: #f5f5f5;
+        color: #727272;
+    }
+
+.header-buttons {
+    display: flex;
+    align-items: center;
+    
+}
+
+
+
+
+
+
+
+/* ___________________ Header ________________*/
+
+
+
+
+
+    
+
+
 .nav-container {
     display: flex;
     align-items: center;
     overflow: hidden;
     position: relative;
 }
+
 .nav-item-header {
-    overflow: hidden; 
+    overflow: hidden;
     white-space: nowrap;
     flex-grow: 1;
 }
@@ -147,26 +153,24 @@ table img {
     margin: 0 5px;
 }
 .link-list-item {
-    
-    color: #222; 
-    text-decoration: none; 
+    color: #222;
+    text-decoration: none;
 }
     .link-list-item:hover {
-        color: #5f5f5f; 
+        color: #5f5f5f;
     }
 .nav-container button:hover {
     background-color: #f5f5f5;
     color: #727272;
 }
 
-/*________________�����__________________________________*/
 
 
 
 
 
 
-/* ����� ������ ������ ��� ���������  */
+
 .btn-continue-shopping:hover,
 .btn-recover-pass:hover,
 .btn-input:hover,
@@ -174,6 +178,7 @@ table img {
     background-color: #727272;
     color: #fff;
 }
+
 
 
 .btn-reset-pass,
@@ -219,9 +224,13 @@ table img {
 
     @media (max-width: 576px) {
         .btn-favorite,
-        .btn-cart{
-            margin-top: 5px;
+        .btn-input {
+            margin-right: 4px;
         }
+        .btn-input {
+            padding:0;
+        }
+        
         #product-favorite-btn {
             margin-top: 0px;
         }
