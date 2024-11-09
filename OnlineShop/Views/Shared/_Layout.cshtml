@@ -19,10 +19,6 @@
     <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.3.0/plugins/zoom/lg-zoom.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.3.0/plugins/thumbnail/lg-thumbnail.min.js"></script>
 
-
-
-
-    @* <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-dJ7V6vk8wIyA1xMT2TBn8fYcJ2/euN0+4sMQfIKu2A67RFWYfnAmP07n50zdz+j38cN73Z2MWVq1JzoJOy4lfA==" crossorigin="anonymous" referrerpolicy="no-referrer" /> *@
 </head>
 <body>
     <!-- Modal -->
@@ -78,9 +74,8 @@
         </div>
     </div>
 
-
+    <!-- Header -->
     <div class="container">
-        <!-- Header -->
         <header class="d-flex justify-content-between py-1 py-md-3 align-items-center">
             <a title="Главная страница OnlineShop" class="" asp-controller="Product"
                asp-action="Products">
@@ -130,49 +125,28 @@
                 </a>
             </div>
         </header>
-        <!-- end Header -->
     </div>
-
-    <div class="container">
+    <!-- end Header -->
+    <!-- Navigation -->
+    <div class="container mb-2 mb-md-4">
         <div class="d-flex justify-content-between align-items-center">
-            <div class="nav-container">
-                <button class="btn-left" aria-label="Прокрутить к началу меню навигации.">
-                    <img src="/img/arrow-left.svg" alt="Arrow Left" class="btn-arrow-left">
+            <nav class="category-nav">
+                <button class="scroll-left" onclick="scrollCategories(-1)" style="display: none;">
+                    <img src="/img/arrow-left.svg" alt="Arrow Left">
                 </button>
-                <nav class="nav-item-header">
-                    <ul aria-label="Для навигации используйте клавиши со стрелками" class="ul-main-content">
-                        <!-- Загрузка динамически -->
-                    </ul>
-                </nav>
-                <button class="btn-right" aria-label="Прокрутить к началу меню навигации.">
-                    <img src="/img/arrow-right.svg" alt="Arrow Right" class="btn-arrow-right visible">
+                <ul class="category-list d-flex" onscroll="toggleArrows()">
+                </ul>
+                <button class="scroll-right" onclick="scrollCategories(1)" style="display: none;">
+                    <img src="/img/arrow-right.svg" alt="Arrow Right">
                 </button>
-            </div>
-            <!-- Блок поиска -->
-            <div class="search-section">
-                <form role="search" action="" class="search-form">
-                    <div class="input-group">
-                        <input value=""
-                               placeholder="Поиск"
-                               class="form-control input-search">
-                        <div class="input-group-append">
-                            <button aria-label="Поиск" type="submit" class="btn btn-search">
-                                <img src="/img/search.svg" alt="Search Icon" class="search-icon">
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
+            </nav>
         </div>
     </div>
 
+    <!-- Navigation -->
 
 
-    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-        <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
-        </symbol>
-    </svg>
+
 
     <div class="container">
         <div id="notification-container"></div>
@@ -186,7 +160,7 @@
             &copy; 2024 - OnlineShop - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
-    @* <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> *@
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
@@ -198,21 +172,8 @@
 
 <script>
     $(document).ready(function () {
+
         loadListCategory();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -266,77 +227,36 @@
     }
 
     function fillNavBarListContainer(data) {
-        var ul = $('.ul-main-content');
-        ul.empty(); // Очищаем существующий список
+        var ul = $('.category-list');
+
+        ul.empty();
 
         data.forEach(function (item) {
 
-            var li = $('<li>').addClass('list-item');
-            var url = `http://localhost:5139/shopping/${item.value}/all`;
+            var li = $('<li>').addClass('category-item');
+            var url = '/products?categoryId=' + item.value;
             var a = $('<a>')
                 .attr('tabindex', '0')
                 .attr('role', 'button')
                 .attr('href', url)
                 .addClass('link-list-item')
                 .text(item.text);
-
             li.append(a);
             ul.append(li);
 
         });
-        updateButtons();
+        toggleArrows();
     }
 
-    /* ____Стрелки______ */
-    const navHeader = document.querySelector('.nav-item-header');
-    const ulContent = document.querySelector('.ul-main-content');
-    const btnLeft = document.querySelector('.btn-left .btn-arrow-left');
-    const btnRight = document.querySelector('.btn-right .btn-arrow-right');
-
-    let scrollAmount = 0;
-    const scrollStep = 200;
-
-    function updateButtons() {
-        const maxScrollLeft = ulContent.scrollWidth - navHeader.clientWidth;
-        btnLeft.classList.toggle('visible', scrollAmount > 0);
-        btnRight.classList.toggle('visible', scrollAmount < maxScrollLeft);
-    }
-
-    document.querySelector('.btn-left').addEventListener('click', () => {
-        if (scrollAmount > 0) {
-            scrollAmount -= scrollStep;
-            if (scrollAmount < 0) {
-                scrollAmount = 0;
-            }
-            ulContent.style.transform = `translateX(-${scrollAmount}px)`;
-        }
-        updateButtons();
-    });
-
-    document.querySelector('.btn-right').addEventListener('click', () => {
-        const maxScrollLeft = ulContent.scrollWidth - navHeader.clientWidth;
-        if (scrollAmount < maxScrollLeft) {
-            scrollAmount += scrollStep;
-            if (scrollAmount > maxScrollLeft) {
-                scrollAmount = maxScrollLeft;
-            }
-            ulContent.style.transform = `translateX(-${scrollAmount}px)`;
-        }
-        updateButtons();
-    });
-
-    window.addEventListener('load', () => {
-        const maxScrollLeft = ulContent.scrollWidth - navHeader.clientWidth;
-        btnRight.classList.toggle('visible', maxScrollLeft > 0); // Отображаем кнопку, если есть что прокручивать вправо
-        updateButtons();
-    });
 
 
-    window.addEventListener('resize', () => {
-        const maxScrollLeft = ulContent.scrollWidth - navHeader.clientWidth;
-        btnRight.classList.toggle('visible', maxScrollLeft > 0); // Обновляем видимость кнопки при изменении размера экрана
-        updateButtons();
-    });
+
+
+
+
+
+
+
 
     // Обновление счетчика избранного при загрузке страницы
     document.addEventListener("DOMContentLoaded", async function () {
@@ -344,13 +264,6 @@
         const isAuth = await isAuthenticated();
         updateFavoriteCount(isAuth);
         updateCartCount(isAuth);
-
-
-
-
-
-
-
     });
 
     // Обновляем счетчик при изменении избранного (на других страницах через событие)

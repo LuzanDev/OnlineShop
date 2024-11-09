@@ -88,27 +88,43 @@ namespace OnlineShop.Controllers
 
         [HttpGet]
         [Route("products")]
-        public async Task<IActionResult> Products()
+        public async Task<IActionResult> Products(int? categoryId)
         {
-            var responseProduct = await _productService.GetAllProducts();
-            var listFavorite = new List<long>();
-           
-            if (User.Identity.IsAuthenticated)
+            var responseProduct = categoryId.HasValue
+        ? await _productService.GetProductsByCategoryId(categoryId.Value)
+        : await _productService.GetAllProducts();
+
+            if (responseProduct.IsSuccess)
             {
-                var listFavoriteIds = await _userFavoritesService.GetFavoriteProductIds(User.FindFirstValue(ClaimTypes.NameIdentifier));
-                if (listFavoriteIds.IsSuccess)
+                var listFavorite = new List<long>();
+
+                if (User.Identity.IsAuthenticated)
                 {
-                    listFavorite = listFavoriteIds.Data.ToList();
+                    var listFavoriteIds = await _userFavoritesService.GetFavoriteProductIds(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                    if (listFavoriteIds.IsSuccess)
+                    {
+                        listFavorite = listFavoriteIds.Data.ToList();
+                    }
                 }
+
+                var model = new ProductsViewModel()
+                {
+                    Products = responseProduct.Data,
+                    FavoriteIds = listFavorite
+                };
+
+                return View(model);
             }
-            
-            var model = new ProductsViewModel()
+            else if (responseProduct.ErrorCode == (int)ErrorCodes.ProductCollectionNotFound)
             {
-                Products = responseProduct.Data,
-                FavoriteIds = listFavorite
-            };
-            
-            return View(model);
+                return View(new ProductsViewModel()
+                {
+                    Products = new List<Product>(),
+                    FavoriteIds = new List<long>()
+                });
+            }
+            return BadRequest();
+
         }
 
         [HttpGet]

@@ -213,5 +213,36 @@ namespace OnlineShop.Models.Services
                 ErrorMessage = "ProductNotFound",
             };
         }
+
+        public async Task<CollectionResult<Product>> GetProductsByCategoryId(int id)
+        {
+            var products = await _productRepository.GetAll()
+                .Include(x => x.Images)
+                .Include(x => x.Brand)
+                .Include(x => x.Category)
+                .Where(x => x.CategoryId == id)
+                .ToListAsync();
+            if (!products.Any())
+            {
+                return new CollectionResult<Product>()
+                {
+                    ErrorMessage = "Products not found", 
+                    ErrorCode = (int)ErrorCodes.ProductCollectionNotFound,
+                };
+            }
+            else
+            {
+                foreach (var product in products)
+                {
+                    product.Images = product.Images.OrderBy(image => image.Order).ToList();
+                }
+
+                return new CollectionResult<Product>()
+                {
+                    Data = products,
+                    Count = products.Count
+                };
+            }
+        }
     }
 }
