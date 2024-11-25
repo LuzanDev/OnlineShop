@@ -115,13 +115,15 @@
                         <img src="/img/user.svg" alt="User Logo" class="user-icon">
                     </button>
                 }
-                <a title="Избранное" class="btn-favorite" asp-controller="Favorites" asp-action="Favorites">
+                <a title="Избранное" class="btn-favorite position-relative" asp-controller="Favorites" asp-action="Favorites">
                     <img src="/img/favorite_border.svg" alt="Favorite Logo" class="favorite-icon">
-                    <span class="badge rounded-pill bg-secondary" id="favorites-count">0</span>
+                    <span class="position-absolute top-100 start-100 translate-middle badge rounded-pill text-bg-dark"
+                          id="favorites-count"></span>
                 </a>
-                <a title="Корзина" class="btn-cart" asp-controller="Cart" asp-action="Cart">
+                <a title="Корзина" class="btn-cart position-relative" asp-controller="Cart" asp-action="Cart">
                     <img src="/img/cart.svg" alt="Cart Logo" class="cart-icon">
-                    <span class="badge rounded-pill bg-secondary" id="cart-count">0</span>
+                    <span class="position-absolute top-100 start-100 translate-middle badge rounded-pill text-bg-dark"
+                          id="cart-count"></span>
                 </a>
             </div>
         </header>
@@ -142,8 +144,7 @@
             </nav>
         </div>
     </div>
-
-    <!-- Navigation -->
+    <!-- end Navigation -->
 
 
 

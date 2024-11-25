@@ -1,4 +1,5 @@
-﻿using OnlineShop.Models.Interfaces.Repository;
+﻿using OnlineShop.Models.Entity;
+using OnlineShop.Models.Interfaces.Repository;
 
 namespace OnlineShop.Models.DAL.Repositories
 {
@@ -42,6 +43,22 @@ namespace OnlineShop.Models.DAL.Repositories
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
+        }
+
+        public void Attach(T entity)
+        {
+            if (entity == null) throw new ArgumentNullException("Entity is null");
+            _context.Attach(entity);
+        }
+
+        public async Task<IEnumerable<T>> AddRangeAsync(IEnumerable<T> entities)
+        {
+            if (entities == null || !entities.Any())
+                throw new ArgumentNullException("Entities collection is null or empty");
+
+            await _context.AddRangeAsync(entities);
+            await _context.SaveChangesAsync();
+            return entities;
         }
     }
 }

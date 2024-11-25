@@ -1,10 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using OnlineShop.Models.DTO;
-using OnlineShop.Models.Entity;
 using OnlineShop.Models.Interfaces.Services;
-using OnlineShop.Models.Services;
-using SendGrid;
 using System.Security.Claims;
 
 namespace OnlineShop.Controllers
@@ -13,7 +10,7 @@ namespace OnlineShop.Controllers
     {
         private readonly ICartService _cartService;
 
-        public CartController(ICartService cartService)
+        public CartController(ICartService cartService, IMemoryCache cache)
         {
             _cartService = cartService;
         }
@@ -32,42 +29,17 @@ namespace OnlineShop.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost] //Ужасно
         public async Task<IActionResult> SyncCartItem([FromBody] List<long> cartItemsId)
         {
-            if (cartItemsId == null || !cartItemsId.Any())
-            {
-                return Json(new { success = true });
-            }
-
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            // Получить список id товаров которые уже в избранном (из базы данных)
-            var CartItemsInDataBase = await _cartService.GetCartProductIds(userId);
+            var response = await _cartService.SyncCartItems(userId,cartItemsId);
 
-            if (CartItemsInDataBase.IsSuccess)
+            if (response.IsSuccess)
             {
-                // Cписок id продуктов, которые уже в избранном
-                var resultListCartItemsInDataBase = CartItemsInDataBase.Data.ToList();
-
-                foreach (var idProduct in cartItemsId)
-                {
-                    if (!resultListCartItemsInDataBase.Contains(idProduct))
-                    {
-                        var addResult = await _cartService.AddItemToCart(userId, idProduct);
-
-                        if (!addResult.IsSuccess)
-                        {
-                            return StatusCode(500, new { success = false, errorMessage = addResult.ErrorMessage });
-                        }
-                    }
-                }
-
-                return Json(new { success = true });
+                return Json(new { success = response.Data });
             }
-            else
-            {
-                return StatusCode(500, new { success = false, errorMessage = CartItemsInDataBase.ErrorMessage });
-            }
+            return StatusCode(500, new { success = response.Data, errorMessage = response.ErrorMessage });
         }
 
 
@@ -103,7 +75,7 @@ namespace OnlineShop.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateItemQuantity([FromBody] UpdateQuantityDto model)
         {
-            
+
             var response = await _cartService.UpdateCartItemQuantity(User.FindFirstValue(ClaimTypes.NameIdentifier), model.ProductId, model.Quantity);
 
             if (response.IsSuccess)

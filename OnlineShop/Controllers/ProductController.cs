@@ -1,14 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OnlineShop.Models.Interfaces.Services;
 using OnlineShop.Models;
-using System.Diagnostics;
-using OnlineShop.Views.ViewModel;
-using OnlineShop.Models.Entity.Result;
 using OnlineShop.Models.Entity;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using OnlineShop.Models.Services;
 using OnlineShop.Models.Enums;
-using System.Net;
+using OnlineShop.Models.Interfaces.Services;
+using OnlineShop.Views.ViewModel;
 using System.Security.Claims;
 
 namespace OnlineShop.Controllers
@@ -17,9 +12,9 @@ namespace OnlineShop.Controllers
     {
         private readonly IProductService _productService;
         private readonly ICartService _cartService;
-        private readonly IUserFavoritesService _userFavoritesService;
+        private readonly IFavoriteService _userFavoritesService;
 
-        public ProductController(IProductService productService, IUserFavoritesService userFavoritesService, ICartService cartService)
+        public ProductController(IProductService productService, IFavoriteService userFavoritesService, ICartService cartService)
         {
             _productService = productService;
             _userFavoritesService = userFavoritesService;
@@ -58,7 +53,7 @@ namespace OnlineShop.Controllers
 
         [HttpPut]
         [Route("Product/Update")]
-        public async Task<IActionResult> Update( long id,  ProductViewModel model)
+        public async Task<IActionResult> Update(long id, ProductViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -77,7 +72,7 @@ namespace OnlineShop.Controllers
         {
             if (ModelState.IsValid)
             {
-               var response = await _productService.CreateProductAsync(model);
+                var response = await _productService.CreateProductAsync(model);
                 return Json(new { success = true, productName = response.Data.Name });
             }
             else
@@ -91,8 +86,8 @@ namespace OnlineShop.Controllers
         public async Task<IActionResult> Products(int? categoryId)
         {
             var responseProduct = categoryId.HasValue
-        ? await _productService.GetProductsByCategoryId(categoryId.Value)
-        : await _productService.GetAllProducts();
+            ? await _productService.GetProductsByCategoryId(categoryId.Value)
+            : await _productService.GetAllProducts();
 
             if (responseProduct.IsSuccess)
             {
@@ -131,7 +126,14 @@ namespace OnlineShop.Controllers
         [Route("product/{id:long}")]
         public async Task<IActionResult> Product([FromRoute] long id)
         {
-            var product = await _productService.GetProductById(id);
+            var response = await _productService.GetProductById(id);
+            if (!response.IsSuccess)
+            {
+               return View("Error", new ErrorViewModel()
+               {
+                   RequestId = response.ErrorMessage 
+               });
+            }
 
             var listFavorite = new List<long>();
             var productIdsInCart = new List<long>();
@@ -156,7 +158,7 @@ namespace OnlineShop.Controllers
             }
             var model = new ProductPageViewModel()
             {
-                Product = product.Data,
+                Product = response.Data,
                 isFavorite = isFavorite,
                 inCart = inCart
             };
@@ -185,8 +187,8 @@ namespace OnlineShop.Controllers
         {
             var response = await _productService.GetProductsByListId(listId);
             if (response.IsSuccess)
-            { 
-            return Json(response.Data); 
+            {
+                return Json(response.Data);
             }
             else
             {

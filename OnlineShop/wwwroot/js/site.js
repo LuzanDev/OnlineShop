@@ -309,6 +309,7 @@ async function removeCartItemFromCartPage(productId) {
 // Синхронизация корзины
 async function syncCartItems() {
     const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+    debugger;
     const cartItemsId = cartItems.map(item => parseInt(item.ProductId));
 
     if (cartItemsId.length > 0) {
@@ -555,7 +556,7 @@ function renderFavorites(products) {
         const formattedPrice = product.price.toLocaleString('uk-UA', { minimumFractionDigits: 0 });
 
         html += `
-            <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
+            <div class="col-lg-3 col-md-4 col-6 mb-4">
                 <div class="card" data-product-id="${product.id}">
                     <a href="/product/${product.id}">
                         <img src="data:image/jpeg;base64,${firstImage}"

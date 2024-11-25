@@ -1,26 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OnlineShop.Models.Interfaces.Services;
-using OnlineShop.Models;
-using System.Diagnostics;
-using OnlineShop.Views.ViewModel;
-using OnlineShop.Models.Entity.Result;
-using OnlineShop.Models.Entity;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using OnlineShop.Models.Services;
-using OnlineShop.Models.Enums;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Security.Claims;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 
 namespace OnlineShop.Controllers
 {
-    
+
     public class FavoritesController : Controller
     {
-        private readonly IUserFavoritesService _userFavoritesService;
+        private readonly IFavoriteService _userFavoritesService;
 
-        public FavoritesController(IUserFavoritesService userFavoritesService, IProductService productService)
+        public FavoritesController(IFavoriteService userFavoritesService, IProductService productService)
         {
             _userFavoritesService = userFavoritesService;
         }
@@ -42,38 +32,16 @@ namespace OnlineShop.Controllers
         [HttpPost]
         public async Task<IActionResult> SyncFavorites([FromBody] List<int> favoriteProductIds)
         {
-            if (favoriteProductIds == null || !favoriteProductIds.Any())
-            {
-                return Json(new { success = true });
-            }
-
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            // Получить список id товаров которые уже в избранном (из базы данных)
-            var responseFavorites = await _userFavoritesService.GetFavoriteProductIds(userId);
+            var response = await _userFavoritesService.SyncFavorites(userId, favoriteProductIds);
 
-            if (responseFavorites.IsSuccess)
+            if (response.IsSuccess)
             {
-                // Cписок id продуктов, которые уже в избранном
-                var existingFavorites = responseFavorites.Data.ToList();
-
-                foreach (var idProduct in favoriteProductIds)
-                {
-                    if (!existingFavorites.Contains(idProduct))
-                    {
-                        var addResult = await _userFavoritesService.AddProductToFavorites(idProduct, userId);
-
-                        if (!addResult.IsSuccess)
-                        {
-                            return StatusCode(500, new { success = false, errorMessage = addResult.ErrorMessage });
-                        }
-                    }
-                }
-                
-                return Json(new { success = true });
+                return Json(new { success = response.Data });
             }
             else
             {
-                return StatusCode(500, new { success = false, errorMessage = responseFavorites.ErrorMessage });
+                return StatusCode(500, new { success = response.Data, errorMessage = response.ErrorMessage });
             }
         }
 
@@ -107,7 +75,7 @@ namespace OnlineShop.Controllers
 
         [Authorize]
         [HttpDelete]
-        public async Task<ActionResult> DeleteFavorites([FromBody]long productId)
+        public async Task<ActionResult> DeleteFavorites([FromBody] long productId)
         {
             var response = await _userFavoritesService
             .DeleteProductFromFavorites(productId, User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -121,17 +89,6 @@ namespace OnlineShop.Controllers
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
         [HttpGet]
         [Route("favorites")]
         public IActionResult Favorites()
@@ -141,5 +98,5 @@ namespace OnlineShop.Controllers
     }
 
 
-    
+
 }

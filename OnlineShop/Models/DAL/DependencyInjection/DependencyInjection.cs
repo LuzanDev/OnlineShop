@@ -59,7 +59,7 @@ namespace OnlineShop.Models.DAL.DependencyInjection
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IBrandService, BrandService>();
             services.AddScoped<ICategoryService, CategoryService>();
-            services.AddScoped<IUserFavoritesService, UserFavoritesService>();
+            services.AddScoped<IFavoriteService, FavoriteService>();
             services.AddTransient<IEmailSender, SendGridEmailSender>();
 
         }

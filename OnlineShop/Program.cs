@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Authorization;
 using OnlineShop.Models.DAL.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddMemoryCache();
+
 // My services
 builder.Services.AddDataAccessLayer(builder.Configuration);
 
@@ -32,9 +35,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
 app.UseAuthentication();
-app.UseAuthorization();
+
 
 app.Use(async (context, next) =>
 {
@@ -44,8 +46,23 @@ app.Use(async (context, next) =>
         return;
     }
 
+    // ѕроверка авторизации дл€ защищенных маршрутов
+    var endpoint = context.GetEndpoint();
+    var authorizeAttribute = endpoint?.Metadata.GetMetadata<AuthorizeAttribute>();
+
+    // ≈сли атрибут [Authorize] присутствует и пользователь не авторизован
+    if (authorizeAttribute != null && !context.User.Identity.IsAuthenticated)
+    {
+        // ѕеренаправление на страницу товаров с параметром дл€ открыти€ модального окна
+        context.Response.Redirect("/products?authModal=true");
+        return;
+    }
+
     await next();
 });
+
+
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",

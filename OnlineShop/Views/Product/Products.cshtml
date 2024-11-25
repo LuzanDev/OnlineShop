@@ -7,17 +7,17 @@
             <div class="card" data-product-id="@product.Id">
                 @if (product.Images.Any())
                 {
-                            <a href="@Url.Action("Product", "Product", new { id = product.Id })">
-                                <img src="data:image/jpeg;base64,@Convert.ToBase64String(product.Images.First().Data)" 
-                                             data-hover-src="@(product.Images.Count > 1 ? "data:image/jpeg;base64," + Convert.ToBase64String(product.Images[1].Data) : string.Empty)" 
-                                     class="card-img-top current-product-image" 
-                                     alt="Product Image">
-                            </a>
+                    <a href="@Url.Action("Product", "Product", new { id = product.Id })">
+                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(product.Images.First().Data)"
+                             data-hover-src="@(product.Images.Count > 1 ? "data:image/jpeg;base64," + Convert.ToBase64String(product.Images[1].Data) : string.Empty)"
+                             class="card-img-top current-product-image"
+                             alt="Product Image">
+                    </a>
                 }
                 <button class="favorite-button @(Model.FavoriteIds.Contains(product.Id) ? "active" : "")">
-                            <img src="/img/@(Model.FavoriteIds.Contains(product.Id) ? "favorite_fill" : "favorite_border").svg" alt="Favorite" class="favorite-icon">
+                    <img src="/img/@(Model.FavoriteIds.Contains(product.Id) ? "favorite_fill" : "favorite_border").svg" alt="Favorite" class="favorite-icon">
                 </button>
-                
+
                 <div class="card-body">
                     <h4 class="card-title">@product.Name</h4>
                     <p class="card-text">@product.Description</p>
@@ -42,91 +42,115 @@
 
 
     .current-product-image {
-    transition: opacity 0.3s ease;
-}
-
-.current-product-image.hovered {
-    opacity: 0.8; /* Параметр для изменения внешнего вида при наведении */
-}
-
-.favorite-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px; /* Круглая кнопка */
-    border: 2px solid transparent; /* Начальная граница прозрачная */
-    transition: border-color 0.3s ease;
-}
-
-.favorite-icon {
-    width: 24px; /* Размер иконки */
-    height: 24px;
-    transition: opacity 0.3s ease;
-}
-
-.favorite-button:hover {
-    background-color: #f5f5f5;
-    color: #727272;
-}
-
-    .favorite-button:hover .favorite-icon {
-        content: url('/img/favorite_fill.svg'); /* Заполненное сердце при наведении */
+        transition: opacity 0.3s ease;
     }
 
-.favorite-button.active .favorite-icon {
-    content: url('/img/favorite_fill.svg'); /* Заполненное сердце, когда товар в избранном */
-}
+        .current-product-image.hovered {
+            opacity: 0.8; /* Параметр для изменения внешнего вида при наведении */
+        }
+
+    .favorite-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px; /* Круглая кнопка */
+        border: 2px solid transparent; /* Начальная граница прозрачная */
+        transition: border-color 0.3s ease;
+    }
+
+    .favorite-icon {
+        width: 24px; /* Размер иконки */
+        height: 24px;
+        transition: opacity 0.3s ease;
+    }
+
+    .favorite-button:hover {
+        background-color: #f5f5f5;
+        color: #727272;
+    }
+
+        .favorite-button:hover .favorite-icon {
+            content: url('/img/favorite_fill.svg'); /* Заполненное сердце при наведении */
+        }
+
+    .favorite-button.active .favorite-icon {
+        content: url('/img/favorite_fill.svg'); /* Заполненное сердце, когда товар в избранном */
+    }
 
     .favorite-button.active:hover .favorite-icon {
         content: url('/img/favorite_border.svg');
     }
 
     .favorite-button .favorite-icon {
-    content: url('/img/favorite_border.svg'); /* Иконка пустого сердца */
-}
-
+        content: url('/img/favorite_border.svg'); /* Иконка пустого сердца */
+    }
 
 </style>
 
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+
+        showAuthModalIfNeeded();
         changeImagesOnHover();
         loadFavoriteIcons();
         AddHandlerClickFavoriteButton();
     });
 
-    
-// Состояние избранных товаров для неавторизованного пользователя
-   async function loadFavoriteIcons()
-    {
+
+    // Состояние избранных товаров для неавторизованного пользователя
+    async function loadFavoriteIcons() {
         const isAuth = await isAuthenticated();
-        if (!isAuth)
-        {
+        if (!isAuth) {
             updateFavoriteIcons();
         }
     }
 
+    function showAuthModalIfNeeded() {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // Проверяем, есть ли параметр authModal в URL
+        if (urlParams.has('authModal')) {
+            // Задержка, чтобы гарантировать, что модальное окно откроется после загрузки страницы
+            setTimeout(function () {
+                // Показываем модальное окно
+                $('#authModal').modal('show');
+
+                // Убираем параметр authModal из URL
+                urlParams.delete('authModal');
+
+                // Формируем новый URL без параметра authModal
+                const newUrl = urlParams.toString()
+                    ? window.location.pathname + '?' + urlParams.toString()
+                    : window.location.pathname;
+
+                // Обновляем URL без перезагрузки страницы
+                history.replaceState(null, '', newUrl); // Удаляем знак вопроса, если нет параметров
+            }, 500);
+        }
+    }
+
+
 
     // Функция для проверки состояния избранных товаров для неавторизованного пользователя
-        function updateFavoriteIcons() {
-            const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-            document.querySelectorAll('.favorite-button').forEach(button => {
-                const productId = button.closest('.card').dataset.productId;
+    function updateFavoriteIcons() {
+        const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+        document.querySelectorAll('.favorite-button').forEach(button => {
+            const productId = button.closest('.card').dataset.productId;
 
-                // Если товар есть в избранном, показываем заполненное сердце
-                if (favorites.includes(productId)) {
-                    button.classList.add('active');
-                } 
-            });
-        }
-        // Функция для обновления изображения при наведении
-        function changeImagesOnHover(){
-            const images = document.querySelectorAll('.current-product-image');
-            images.forEach(img => {
+            // Если товар есть в избранном, показываем заполненное сердце
+            if (favorites.includes(productId)) {
+                button.classList.add('active');
+            }
+        });
+    }
+    // Функция для обновления изображения при наведении
+    function changeImagesOnHover() {
+        const images = document.querySelectorAll('.current-product-image');
+        images.forEach(img => {
             const originalSrc = img.src;
             const hoverSrc = img.getAttribute('data-hover-src');
             if (hoverSrc) {
@@ -138,44 +162,44 @@
                 });
             }
         });
-        }
-// Добавляем обработчики на кнопки избранного для карточек товаров
-async function AddHandlerClickFavoriteButton() {
-    const favoriteButtons = document.querySelectorAll('.favorite-button');
-    favoriteButtons.forEach(button => {
-        button.addEventListener('click', async function () {
-            const productId = this.closest('.card').dataset.productId; // Получаем ID товара
-            let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+    }
+    // Добавляем обработчики на кнопки избранного для карточек товаров
+    async function AddHandlerClickFavoriteButton() {
+        const favoriteButtons = document.querySelectorAll('.favorite-button');
+        favoriteButtons.forEach(button => {
+            button.addEventListener('click', async function () {
+                const productId = this.closest('.card').dataset.productId; // Получаем ID товара
+                let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
 
-            // Проверка авторизации
-            const isAuth = await isAuthenticated();
+                // Проверка авторизации
+                const isAuth = await isAuthenticated();
 
-            if (isAuth) {
-                // Если пользователь авторизован, отправляем запрос на сервер
-                if (this.classList.contains('active')) {
-                    await removeFromFavorites(productId);
-                    this.classList.remove('active');
+                if (isAuth) {
+                    // Если пользователь авторизован, отправляем запрос на сервер
+                    if (this.classList.contains('active')) {
+                        await removeFromFavorites(productId);
+                        this.classList.remove('active');
+                    } else {
+                        await addToFavorites(productId);
+                        this.classList.add('active');
+                    }
                 } else {
-                    await addToFavorites(productId);
-                    this.classList.add('active');
+                    // Если пользователь не авторизован, работаем с localStorage
+                    if (favorites.includes(productId)) {
+                        // Удаление товара из избранного
+                        favorites = favorites.filter(id => id !== productId);
+                        this.classList.remove('active');
+                    } else {
+                        // Добавление товара в избранное
+                        favorites.push(productId);
+                        this.classList.add('active');
+                    }
+                    localStorage.setItem('favorites', JSON.stringify(favorites));
+                    updateFavoriteCount();
                 }
-            } else {
-                // Если пользователь не авторизован, работаем с localStorage
-                if (favorites.includes(productId)) {
-                    // Удаление товара из избранного
-                    favorites = favorites.filter(id => id !== productId);
-                    this.classList.remove('active');
-                } else {
-                    // Добавление товара в избранное
-                    favorites.push(productId);
-                    this.classList.add('active');
-                }
-                localStorage.setItem('favorites', JSON.stringify(favorites));
-                updateFavoriteCount();
-            }
+            });
         });
-    });
-}
+    }
 
 
 

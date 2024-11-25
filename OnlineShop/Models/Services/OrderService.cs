@@ -1,5 +1,5 @@
-﻿using EllipticCurve.Utils;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using OnlineShop.Models.Entity;
 using OnlineShop.Models.Entity.Result;
 using OnlineShop.Models.Enums;
@@ -13,10 +13,12 @@ namespace OnlineShop.Models.Services
     public class OrderService : IOrderService
     {
         private readonly IBaseRepository<Order> _orderRepository;
+        private readonly IMemoryCache _cache;
 
-        public OrderService(IBaseRepository<Order> orderRepository)
+        public OrderService(IBaseRepository<Order> orderRepository, IMemoryCache cache)
         {
             _orderRepository = orderRepository;
+            _cache = cache;
         }
 
         public async Task<BaseResult<Order>> CreateOrder(CheckoutViewModel model)
@@ -44,11 +46,18 @@ namespace OnlineShop.Models.Services
                     });
                 }
 
-                var result = await _orderRepository.AddAsync(order);
+                var newOrder = await _orderRepository.AddAsync(order);
+                var orders = await LoadOrders(newOrder.UserId);
+
+                _cache.Set($"Orders_{newOrder.UserId}", orders, new MemoryCacheEntryOptions()
+                {
+                    SlidingExpiration = TimeSpan.FromMinutes(30)
+                });
+
 
                 return new BaseResult<Order>()
                 {
-                    Data = result
+                    Data = newOrder
                 };
             }
             catch (Exception ex)
@@ -61,21 +70,21 @@ namespace OnlineShop.Models.Services
             }
 
         }
-
         public async Task<CollectionResult<Order>> GetAllOrders(string userId)
         {
             try
             {
-                var orders = await _orderRepository.GetAll()
-                .Include(x => x.City)
-                .Include(x => x.OrderItems)
-                .ThenInclude(x => x.Product)
-                .ThenInclude(x => x.Images)
-                .Where(x => x.UserId == userId)
-                .OrderByDescending(x => x.OrderDate)
-                .ToListAsync();
+                if (!_cache.TryGetValue($"Orders_{userId}", out List<Order> orders))
+                {
+                    orders = await LoadOrders(userId);
+                }
                 if (orders.Count > 0)
                 {
+                    _cache.Set($"Orders_{userId}", orders, new MemoryCacheEntryOptions()
+                    {
+                        SlidingExpiration = TimeSpan.FromMinutes(30)
+                    });
+
                     return new CollectionResult<Order>()
                     {
                         Data = orders,
@@ -112,17 +121,21 @@ namespace OnlineShop.Models.Services
                 ShippingAddress = x.ShippingAddress
             });
         }
-
-        public async Task<BaseResult<Order>> GetOrder(int id)
+        public async Task<BaseResult<Order>> GetOrder(int id, string userId)
         {
             try
             {
-                var order = await _orderRepository.GetAll()
-                    .Include(x => x.City)
-                    .Include(x => x.OrderItems)
-                    .ThenInclude(x => x.Product)
-                    .ThenInclude(x => x.Images)
-                    .FirstOrDefaultAsync(x => x.Id == id);
+                if (!_cache.TryGetValue($"Orders_{userId}", out List<Order> orders))
+                {
+                    orders = await LoadOrders(userId);
+
+                    _cache.Set($"Orders_{userId}", orders, new MemoryCacheEntryOptions()
+                    {
+                        SlidingExpiration = TimeSpan.FromMinutes(30)
+                    });
+                }
+
+                var order = orders.FirstOrDefault(x => x.Id == id);
                 if (order == null)
                 {
                     return new BaseResult<Order>()
@@ -147,7 +160,7 @@ namespace OnlineShop.Models.Services
         }
         public async Task<OrderViewModel> CreateOrderViewModel(int orderId, ApplicationUser user)
         {
-            var orderResponse = await GetOrder(orderId);
+            var orderResponse = await GetOrder(orderId, user.Id);
             var order = orderResponse.Data;
 
             return new OrderViewModel()
@@ -162,6 +175,18 @@ namespace OnlineShop.Models.Services
                 UserNumberPhone = user.PhoneNumber,
                 ShippingAddress = order.ShippingAddress,
             };
+        }
+        private async Task<List<Order>> LoadOrders(string userId)
+        {
+            var orders = await _orderRepository.GetAll()
+                .Include(x => x.City)
+                .Include(x => x.OrderItems)
+                .ThenInclude(x => x.Product)
+                .ThenInclude(x => x.Images)
+                .Where(x => x.UserId == userId)
+                .OrderByDescending(x => x.OrderDate)
+                .ToListAsync();
+            return orders;
         }
     }
 }

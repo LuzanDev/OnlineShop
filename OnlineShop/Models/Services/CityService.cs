@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using OnlineShop.Models.Entity;
 using OnlineShop.Models.Entity.Result;
 using OnlineShop.Models.Enums;
@@ -10,18 +11,28 @@ namespace OnlineShop.Models.Services
     public class CityService : ICityService
     {
         private readonly IBaseRepository<City> _cityRepository;
+        private readonly IMemoryCache _cache;
+        private readonly string _citiesCacheKey = "Cities_All";
 
-        public CityService(IBaseRepository<City> cityRepository)
+        public CityService(IBaseRepository<City> cityRepository, IMemoryCache cache)
         {
             _cityRepository = cityRepository;
+            _cache = cache;
         }
 
         public async Task<CollectionResult<City>> GetAllCity()
         {
-            var cities = await _cityRepository.GetAll()
-                .OrderBy(city => city.Name)
-                .ToListAsync();
-            if (cities == null || !cities.Any())
+            if (!_cache.TryGetValue(_citiesCacheKey, out List<City> cities))
+            {
+                cities = await LoadCities();
+
+                _cache.Set(_citiesCacheKey, cities, new MemoryCacheEntryOptions()
+                {
+                    SlidingExpiration = TimeSpan.FromMinutes(30)
+                });
+            }
+            
+            if (cities == null || cities.Count < 1)
             {
                 return new CollectionResult<City>()
                 {
@@ -38,9 +49,17 @@ namespace OnlineShop.Models.Services
 
         public async Task<BaseResult<City>> GetCityByName(string name)
         {
-            var city = await _cityRepository.GetAll()
-                .Where(x => x.Name == name)
-                .FirstOrDefaultAsync();
+            if (!_cache.TryGetValue(_citiesCacheKey, out List<City> cities))
+            {
+                cities = await LoadCities();
+
+                _cache.Set(_citiesCacheKey, cities, new MemoryCacheEntryOptions()
+                {
+                    SlidingExpiration = TimeSpan.FromMinutes(30)
+                });
+            }
+
+            var city = cities.FirstOrDefault(x => x.Name == name);
 
             if (city == null)
             {
@@ -54,6 +73,12 @@ namespace OnlineShop.Models.Services
             {
                 Data = city
             };
+        }
+
+        private async Task<List<City>> LoadCities()
+        {
+            var cities = await _cityRepository.GetAll().OrderBy(city => city.Name).ToListAsync();
+            return cities;
         }
     }
 }
