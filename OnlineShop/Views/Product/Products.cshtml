@@ -8,10 +8,11 @@
                 @if (product.Images.Any())
                 {
                     <a href="@Url.Action("Product", "Product", new { id = product.Id })">
-                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(product.Images.First().Data)"
-                             data-hover-src="@(product.Images.Count > 1 ? "data:image/jpeg;base64," + Convert.ToBase64String(product.Images[1].Data) : string.Empty)"
+                        <img src="@Url.Content("~/images/products/" + product.Images.First().FileName)"
+                             data-hover-src="@(product.Images.Count > 1 ? Url.Content("~/images/products/" + product.Images[1].FileName) : string.Empty)"
                              class="card-img-top current-product-image"
                              alt="Product Image">
+
                     </a>
                 }
                 <button class="favorite-button @(Model.FavoriteIds.Contains(product.Id) ? "active" : "")">

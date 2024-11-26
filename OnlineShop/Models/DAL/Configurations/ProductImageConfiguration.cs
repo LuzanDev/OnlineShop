@@ -10,7 +10,6 @@ namespace OnlineShop.Models.DAL.Configurations
         {
             builder.Property(x => x.Id).ValueGeneratedOnAdd();
             builder.Property(x => x.FileName).IsRequired();
-            builder.Property(x => x.Data).IsRequired();
         }
     }
 }

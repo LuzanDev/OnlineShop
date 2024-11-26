@@ -6,6 +6,9 @@ using OnlineShop.Models.Enums;
 using OnlineShop.Models.Interfaces.Repository;
 using OnlineShop.Models.Interfaces.Services;
 using OnlineShop.Views.ViewModel;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Processing;
 
 namespace OnlineShop.Models.Services
 {
@@ -80,75 +83,109 @@ namespace OnlineShop.Models.Services
         }
         public async Task<BaseResult<Product>> CreateProductAsync(ProductViewModel model)
         {
-            List<int> imageOrder = new List<int>();
-            if (model.ImageOrder == null)
-            {
-                imageOrder = Enumerable.Range(0, model.Images.Count).ToList();
-            }
-            else
-            {
-                imageOrder = model.ImageOrder.Split(',').Select(int.Parse).ToList();
-            }
+            // Определяем путь для сохранения изображений
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "products");
+            var thumbnailsFolder = Path.Combine(uploadsFolder, "thumbnails");
 
+            Directory.CreateDirectory(uploadsFolder); // Создаем папку, если она не существует
+            Directory.CreateDirectory(thumbnailsFolder);
 
-            var images = ConvertFilesToImages(model.Images);
-            List<ProductImage> sortImage = new List<ProductImage>();
+            // Обрабатываем порядок изображений
+            List<int> imageOrder = model.ImageOrder == null
+                ? Enumerable.Range(0, model.Images.Count).ToList()
+                : model.ImageOrder.Split(',').Select(int.Parse).ToList();
+
+            // Сохраняем изображения и формируем список
+            var sortImage = new List<ProductImage>();
             for (int i = 0; i < model.Images.Count; i++)
             {
-                sortImage.Add(images[imageOrder[i]]);
-                sortImage[i].Order = i;
+                var file = model.Images[i];
+
+                // Генерируем уникальное имя файла
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+                var thumbnailPath = Path.Combine(thumbnailsFolder, fileName);
+
+                // Сохраняем оригинальное изображение
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Генерируем миниатюру
+                GenerateThumbnail(filePath, thumbnailPath);
+
+                // Добавляем изображение в список
+                sortImage.Add(new ProductImage
+                {
+                    FileName = fileName,
+                    Order = imageOrder[i]
+                });
             }
 
 
-            Product product = new Product()
+            // Создаем товар
+            Product product = new Product
             {
                 Name = model.Name,
                 Description = model.Description,
                 Price = model.Price,
                 BrandId = model.BrandId,
                 CategoryId = model.CategoryId,
-                Images = sortImage
+                Images = sortImage.OrderBy(img => img.Order).ToList()
             };
+
+            // Сохраняем товар в репозиторий
             product = await _productRepository.AddAsync(product);
 
+            // Обновляем кэш, если нужно
             if (_cache.TryGetValue(_productsCacheKey, out List<Product> products))
             {
-                if (!products.Contains(product))
-                {
-                    product.Images = product.Images.OrderBy(iproduct => iproduct.Order).ToList();
-                    products.Add(product);
+                products = await LoadProducts();
 
-                    _cache.Set(_productsCacheKey, products, new MemoryCacheEntryOptions()
-                    {
-                        SlidingExpiration = TimeSpan.FromMinutes(30)
-                    });
-                }
+                _cache.Set(_productsCacheKey, products, new MemoryCacheEntryOptions
+                {
+                    SlidingExpiration = TimeSpan.FromMinutes(30)
+                });
             }
-            return new BaseResult<Product>()
+
+            return new BaseResult<Product>
             {
                 Data = product
             };
         }
-        private List<ProductImage> ConvertFilesToImages(List<IFormFile> images)
+        private void GenerateThumbnail(string originalImagePath, string thumbnailPath)
         {
-            List<ProductImage> productImages = new List<ProductImage>();
-
-            foreach (var image in images)
+            using var image = SixLabors.ImageSharp.Image.Load(originalImagePath); // Подключите библиотеку ImageSharp
+            image.Mutate(x => x.Resize(new ResizeOptions
             {
-                ProductImage productImage = new ProductImage();
-                productImage.FileName = image.FileName;
+                Size = new Size(150, 150), // Размер миниатюры
+                Mode = ResizeMode.Crop
+            }));
 
-                // Считываем данные изображения в массив байтов
-                using (var stream = new MemoryStream())
-                {
-                    image.CopyTo(stream);
-                    productImage.Data = stream.ToArray();
-                }
-
-                productImages.Add(productImage);
-            }
-            return productImages;
+            image.Save(thumbnailPath, new JpegEncoder { Quality = 75 }); // Сохраняем миниатюру
         }
+
+        //private List<ProductImage> ConvertFilesToImages(List<IFormFile> images)
+        //{
+        //    List<ProductImage> productImages = new List<ProductImage>();
+
+        //    foreach (var image in images)
+        //    {
+        //        ProductImage productImage = new ProductImage();
+        //        productImage.FileName = image.FileName;
+
+        //        // Считываем данные изображения в массив байтов
+        //        using (var stream = new MemoryStream())
+        //        {
+        //            image.CopyTo(stream);
+        //            productImage.Data = stream.ToArray();
+        //        }
+
+        //        productImages.Add(productImage);
+        //    }
+        //    return productImages;
+        //}
         public async Task<BaseResult<Product>> UpdateProduct(long id, ProductViewModel model)
         {
             if (!_cache.TryGetValue(_productsCacheKey, out List<Product> products))

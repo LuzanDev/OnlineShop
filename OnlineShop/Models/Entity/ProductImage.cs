@@ -6,31 +6,19 @@ namespace OnlineShop.Models.Entity
     public class ProductImage
     {
         public int Id { get; set; }
-        public string FileName { get; set; }
-        
-        public byte[] Data { get; set; }
+        public string FileName { get; set; } 
         public int Order { get; set; }
         public long ProductId { get; set; }
 
         public string GetImageUrl()
         {
-            string mimeType = GetMimeType(FileName);
-            string base64Image = Convert.ToBase64String(Data);
-            return $"data:{mimeType};base64,{base64Image}";
+            return $"/images/products/{FileName}";
         }
 
-        private string GetMimeType(string fileName)
+        public string GetThumbnailUrl()
         {
-            var extension = Path.GetExtension(fileName).ToLowerInvariant();
-            return extension switch
-            {
-                ".jpg" or ".jpeg" => "image/jpeg",
-                ".png" => "image/png",
-                ".gif" => "image/gif",
-                ".bmp" => "image/bmp",
-                ".tiff" => "image/tiff",
-                _ => "application/octet-stream", 
-            };
+            return $"/images/products/thumbnails/{FileName}";
         }
     }
+
 }

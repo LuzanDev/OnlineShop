@@ -29,7 +29,7 @@ namespace OnlineShop.Controllers
             }
         }
 
-        [HttpPost] //Ужасно
+        [HttpPost] 
         public async Task<IActionResult> SyncCartItem([FromBody] List<long> cartItemsId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

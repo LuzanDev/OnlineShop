@@ -7,12 +7,13 @@
                 {
                     <div class="col-6 mb-2">
                         <a href="@image.GetImageUrl()" class="product-image" data-src="@image.GetImageUrl()">
-                            <img data-src="@image.GetImageUrl()" alt="@Model.Product.Name" class="img-fluid d-none" />
+                            <img src="@image.GetImageUrl()" data-src="@image.GetImageUrl()" alt="@Model.Product.Name" class="img-fluid" loading="lazy" />
                         </a>
                     </div>
                 }
             </div>
         </div>
+
         <!-- ------------------------------------------------------- -->
         <div id="product-text-form" class="col-4">
             <h3 class="view-name-product">@Model.Product.Brand.Name</h3>

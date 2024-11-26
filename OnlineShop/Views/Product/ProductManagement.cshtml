@@ -58,21 +58,14 @@
         $('#productsTable tbody').empty();
 
         $.each(data, function (index, item) {
-            // Извлечение расширения файла из fileName
-            var extension = item.images[0].fileName.split('.').pop().toLowerCase();
-            var imgSrc;
+            var imageFileName = item.images[0].fileName;
 
-            if (extension === 'jpg' || extension === 'jpeg') {
-                imgSrc = 'data:image/jpeg;base64,' + item.images[0].data;
-            }
-            else if (extension === 'png') {
-                imgSrc = 'data:image/png;base64,' + item.images[0].data;
-            }
+            var imgSrc = '/images/products/' + imageFileName;
 
             var row = '<tr data-item=\'' + JSON.stringify(item) + '\'><td><img src="' + imgSrc + '" alt="imgIcon" class="product-image" data-id="' + item.id + '"></td><td>' + item.name + '</td>' +
-            '<td>' + item.description + '</td><td>' + item.brand.name + '</td><td>' + item.category.name + '</td><td>' + item.price
-            + '</td>' + '<td><img src="/img/edit_24dp.svg" alt="Edit" class="edit-product"></td>' +
-            '<td><img src="/img/delete_24dp.svg" alt="Delete" onclick="deleteProductConfirmation(' + item.id + ', \'' + item.name + '\')"></td></tr>';
+                '<td>' + item.description + '</td><td>' + item.brand.name + '</td><td>' + item.category.name + '</td><td>' + item.price
+                + '</td>' + '<td><img src="/img/edit_24dp.svg" alt="Edit" class="edit-product"></td>' +
+                '<td><img src="/img/delete_24dp.svg" alt="Delete" onclick="deleteProductConfirmation(' + item.id + ', \'' + item.name + '\')"></td></tr>';
 
 
             $('#productsTable tbody').append(row);
@@ -84,10 +77,10 @@
         });
 
         // Обработчик клика по изображению для перехода к товару
-    $('.product-image').click(function () {
-        var productId = $(this).data('id');
-        window.open('/product/' + productId, '_blank');
-    });
+        $('.product-image').click(function () {
+            var productId = $(this).data('id');
+            window.open('/product/' + productId, '_blank');
+        });
     }
 
 
@@ -194,12 +187,13 @@
                     var submitButton = form.querySelector('button[type="submit"]');
                     if (submitButton) {
                         // Вызываем обработчик клика кнопки "Добавить товар"
+                        debugger;
                         submitButton.click();
                         modalInstance.hide();
                         modalInstance._element.addEventListener('hidden.bs.modal', function () {
                             setTimeout(function () {
                                 loadTableData();
-                            }, 500);
+                            }, 1500);
                         });
                     }
                     else {
@@ -305,14 +299,11 @@
             // Обработчик события click для кнопки создания бренда
             saveButton.addEventListener('click', function () {
                 // Проверяем валидность формы
-                if (form.checkValidity())
-                {
-                    if (areFormDataEqual(item))
-                    {
+                if (form.checkValidity()) {
+                    if (areFormDataEqual(item)) {
                         alert("Данные не были изменены");
                     }
-                    else
-                    {
+                    else {
                         var formData = new FormData(form);
                         formData.append('id', item.id); // Добавляем id к formData
                         $.ajax({
@@ -346,8 +337,7 @@
                     }
 
                 }
-                else
-                {
+                else {
                     form.reportValidity();
                 }
             });
@@ -371,7 +361,7 @@
 
         var imageOrder = [];
         images.forEach(function (image) {
-            var imgSrc = 'data:image/jpeg;base64,' + image.data;
+            var imgSrc = '/images/products/' + image.fileName;
 
             var container = document.createElement('div');
             container.classList.add('image-container');
@@ -408,8 +398,7 @@
 
         inputElement.addEventListener("change", handleFiles);
 
-        function handleFiles(event)
-        {
+        function handleFiles(event) {
             const files = event.target.files;
             previewContainer.innerHTML = "";  // Clear previous previews
 

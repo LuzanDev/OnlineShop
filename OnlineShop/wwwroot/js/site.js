@@ -191,7 +191,7 @@ function renderCartItems(cartItems) {
     cartItems.forEach(item => {
         const row = document.createElement('tr');
         const imageSrc = item.product.images && item.product.images.length > 0
-            ? `data:image/jpeg;base64,${item.product.images[0].data}`
+            ? `/images/products/${item.product.images[0].fileName}`
             : '';
 
         row.innerHTML = `
@@ -309,7 +309,6 @@ async function removeCartItemFromCartPage(productId) {
 // Синхронизация корзины
 async function syncCartItems() {
     const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
-    debugger;
     const cartItemsId = cartItems.map(item => parseInt(item.ProductId));
 
     if (cartItemsId.length > 0) {
@@ -549,8 +548,8 @@ function renderFavorites(products) {
 
     products.forEach(product => {
         // Получаем первое и второе изображение, если они есть
-        const firstImage = product.images && product.images.length > 0 ? product.images[0].data : '';
-        const secondImage = product.images && product.images.length > 1 ? product.images[1].data : '';
+        const firstImage = product.images && product.images.length > 0 ? product.images[0].fileName : '';
+        const secondImage = product.images && product.images.length > 1 ? product.images[1].fileName : '';
 
         // Форматируем цену, используя toLocaleString без символа валюты
         const formattedPrice = product.price.toLocaleString('uk-UA', { minimumFractionDigits: 0 });
@@ -559,8 +558,8 @@ function renderFavorites(products) {
             <div class="col-lg-3 col-md-4 col-6 mb-4">
                 <div class="card" data-product-id="${product.id}">
                     <a href="/product/${product.id}">
-                        <img src="data:image/jpeg;base64,${firstImage}"
-                             data-hover-src="${secondImage ? 'data:image/jpeg;base64,' + secondImage : ''}"
+                        <img src="/images/products/${firstImage}"
+                             data-hover-src="${secondImage ? '/images/products/' + secondImage : ''}"
                              class="card-img-top current-product-image"
                              alt="Product Image">
                     </a>

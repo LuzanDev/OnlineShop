@@ -399,10 +399,6 @@ namespace OnlineShop.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<byte[]>("Data")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("text");
