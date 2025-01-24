@@ -31,7 +31,7 @@ namespace OnlineShop.Models.Services
                     SlidingExpiration = TimeSpan.FromMinutes(30)
                 });
             }
-            var listNameBrands = brands.Select(x => x.Name).ToList();   
+            var listNameBrands = brands.Select(x => x.Name).ToList();
 
             return listNameBrands.Contains(nameBrand);
         }

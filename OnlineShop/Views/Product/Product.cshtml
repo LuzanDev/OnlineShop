@@ -6,8 +6,10 @@
                 @foreach (var image in Model.Product.Images)
                 {
                     <div class="col-6 mb-2">
-                        <a href="@image.GetImageUrl()" class="product-image" data-src="@image.GetImageUrl()">
-                            <img src="@image.GetImageUrl()" data-src="@image.GetImageUrl()" alt="@Model.Product.Name" class="img-fluid" loading="lazy" />
+                        <a href="@image.GetImageUrl()" class="product-image" 
+                        data-src="@image.GetImageUrl()">
+                            <img src="@image.GetImageUrl()" data-src="@image.GetImageUrl()" 
+                            alt="@Model.Product.Name" class="img-fluid" loading="lazy" />
                         </a>
                     </div>
                 }
